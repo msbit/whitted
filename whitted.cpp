@@ -358,10 +358,10 @@ int main(int argc, char **argv) {
   objects.push_back(std::unique_ptr<Sphere>(sphere1));
   objects.push_back(std::unique_ptr<Sphere>(sphere2));
 
-  const Vec3f verts[4] = {
+  const std::vector<Vec3f> verts = {
       {-5, -3, -6}, {5, -3, -6}, {5, -3, -16}, {-5, -3, -16}};
-  const uint32_t vertIndex[6] = {0, 1, 3, 1, 2, 3};
-  const Vec2f st[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+  const std::vector<uint32_t> vertIndex = {0, 1, 3, 1, 2, 3};
+  const std::vector<Vec2f> st = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
   MeshTriangle *mesh = new MeshTriangle(verts, vertIndex, 2, st);
   mesh->materialType = DIFFUSE_AND_GLOSSY;
 
