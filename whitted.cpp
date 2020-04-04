@@ -152,17 +152,20 @@ public:
 bool solveQuadratic(const float &a, const float &b, const float &c, float &x0,
                     float &x1) {
   float discr = b * b - 4 * a * c;
-  if (discr < 0)
+  if (discr < 0) {
     return false;
-  else if (discr == 0)
+  }
+
+  if (discr == 0) {
     x0 = x1 = -0.5 * b / a;
-  else {
+  } else {
     float q = (b > 0) ? -0.5 * (b + sqrt(discr)) : -0.5 * (b - sqrt(discr));
     x0 = q / a;
     x1 = c / q;
   }
-  if (x0 > x1)
+  if (x0 > x1) {
     std::swap(x0, x1);
+  }
   return true;
 }
 
@@ -178,12 +181,17 @@ public:
     float b = 2 * dotProduct(dir, L);
     float c = dotProduct(L, L) - radius2;
     float t0, t1;
-    if (!solveQuadratic(a, b, c, t0, t1))
+    if (!solveQuadratic(a, b, c, t0, t1)) {
       return false;
-    if (t0 < 0)
+    }
+
+    if (t0 < 0) {
       t0 = t1;
-    if (t0 < 0)
+    }
+    if (t0 < 0) {
       return false;
+    }
+
     tnear = t0;
 
     return true;
@@ -206,18 +214,21 @@ bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
   Vec3f edge2 = v2 - v0;
   Vec3f pvec = crossProduct(dir, edge2);
   float det = dotProduct(edge1, pvec);
-  if (det == 0 || det < 0)
+  if (det == 0 || det < 0) {
     return false;
+  }
 
   Vec3f tvec = orig - v0;
   u = dotProduct(tvec, pvec);
-  if (u < 0 || u > det)
+  if (u < 0 || u > det) {
     return false;
+  }
 
   Vec3f qvec = crossProduct(tvec, edge1);
   v = dotProduct(dir, qvec);
-  if (v < 0 || u + v > det)
+  if (v < 0 || u + v > det) {
     return false;
+  }
 
   float invDet = 1 / det;
 
@@ -233,9 +244,11 @@ public:
   MeshTriangle(const Vec3f *verts, const uint32_t *vertsIndex,
                const uint32_t &numTris, const Vec2f *st) {
     uint32_t maxIndex = 0;
-    for (uint32_t i = 0; i < numTris * 3; ++i)
-      if (vertsIndex[i] > maxIndex)
+    for (uint32_t i = 0; i < numTris * 3; ++i) {
+      if (vertsIndex[i] > maxIndex) {
         maxIndex = vertsIndex[i];
+      }
+    }
     maxIndex += 1;
     vertices = std::unique_ptr<Vec3f[]>(new Vec3f[maxIndex]);
     memcpy(vertices.get(), verts, sizeof(Vec3f) * maxIndex);
