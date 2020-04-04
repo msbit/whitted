@@ -198,7 +198,7 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
 Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
               const std::vector<std::unique_ptr<Object>> &objects,
               const std::vector<std::unique_ptr<Light>> &lights,
-              const Options &options, uint32_t depth, bool test = false) {
+              const Options &options, uint32_t depth) {
   if (depth > options.maxDepth) {
     return options.backgroundColor;
   }
@@ -229,10 +229,10 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
               : hitPoint + N * options.bias;
       const Vec3f reflectionColor =
           castRay(reflectionRayOrigin, reflectionDirection, objects, lights,
-                  options, depth + 1, true);
+                  options, depth + 1);
       const Vec3f refractionColor =
           castRay(refractionRayOrigin, refractionDirection, objects, lights,
-                  options, depth + 1, true);
+                  options, depth + 1);
       float kr;
       fresnel(direction, N, hitObject->ior, kr);
       hitColor = reflectionColor * kr + refractionColor * (1 - kr);
