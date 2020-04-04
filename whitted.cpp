@@ -161,13 +161,13 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
            const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
            uint32_t &index, Vec2f &uv, Object **hitObject) {
   *hitObject = nullptr;
-  for (uint32_t k = 0; k < objects.size(); ++k) {
+  for (const auto& object: objects) {
     float tNearK = kInfinity;
     uint32_t indexK;
     Vec2f uvK;
-    if (objects[k]->intersect(origin, direction, tNearK, indexK, uvK) &&
+    if (object->intersect(origin, direction, tNearK, indexK, uvK) &&
         tNearK < tNear) {
-      *hitObject = objects[k].get();
+      *hitObject = object.get();
       tNear = tNearK;
       index = indexK;
       uv = uvK;
@@ -266,8 +266,8 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
       // We also apply the lambert cosine law here though we haven't explained
       // yet what this means.
       // [/comment]
-      for (uint32_t i = 0; i < lights.size(); ++i) {
-        Vec3f lightDir = lights[i]->position - hitPoint;
+      for (const auto& light: lights) {
+        Vec3f lightDir = light->position - hitPoint;
         // square of the distance between hitPoint and the light
         const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
         lightDir = Vec3f::normalize(lightDir);
@@ -279,13 +279,13 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
         const bool inShadow = trace(shadowPointOrig, lightDir, objects,
                                     tNearShadow, index, uv, &shadowHitObject) &&
                               tNearShadow * tNearShadow < lightDistance2;
-        lightAmt += (1 - inShadow) * lights[i]->intensity * LdotN;
+        lightAmt += (1 - inShadow) * light->intensity * LdotN;
         const Vec3f reflectionDirection = reflect(-lightDir, N);
         specularColor +=
             powf(std::max(0.f,
                           -Vec3f::dotProduct(reflectionDirection, direction)),
                  hitObject->specularExponent) *
-            lights[i]->intensity;
+            light->intensity;
       }
       hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd +
                  specularColor * hitObject->Ks;
