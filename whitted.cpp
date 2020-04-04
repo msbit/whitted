@@ -28,13 +28,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //[/ignore]
 
+#include <algorithm>
 #include <cmath>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <limits>
 #include <memory>
 #include <utility>
