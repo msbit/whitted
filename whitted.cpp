@@ -44,34 +44,11 @@
 
 const float kInfinity = std::numeric_limits<float>::max();
 
-Vec3f normalize(const Vec3f &v) {
-  float mag2 = v.x * v.x + v.y * v.y + v.z * v.z;
-  if (mag2 > 0) {
-    float invMag = 1 / sqrtf(mag2);
-    return Vec3f(v.x * invMag, v.y * invMag, v.z * invMag);
-  }
-
-  return v;
-}
-
-inline float dotProduct(const Vec3f &a, const Vec3f &b) {
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-Vec3f crossProduct(const Vec3f &a, const Vec3f &b) {
-  return Vec3f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
-               a.x * b.y - a.y * b.x);
-}
-
 inline float clamp(const float &lo, const float &hi, const float &v) {
   return std::max(lo, std::min(hi, v));
 }
 
 inline float deg2rad(const float &deg) { return deg * M_PI / 180; }
-
-inline Vec3f mix(const Vec3f &a, const Vec3f &b, const float &mixValue) {
-  return a * (1 - mixValue) + b * mixValue;
-}
 
 struct Options {
   uint32_t width;
@@ -111,9 +88,9 @@ public:
                  uint32_t &index, Vec2f &uv) const {
     // analytic solution
     Vec3f L = orig - center;
-    float a = dotProduct(dir, dir);
-    float b = 2 * dotProduct(dir, L);
-    float c = dotProduct(L, L) - radius2;
+    float a = Vec3f::dotProduct(dir, dir);
+    float b = 2 * Vec3f::dotProduct(dir, L);
+    float c = Vec3f::dotProduct(L, L) - radius2;
     float t0, t1;
     if (!solveQuadratic(a, b, c, t0, t1)) {
       return false;
@@ -134,7 +111,7 @@ public:
   void getSurfaceProperties(const Vec3f &P, const Vec3f &I,
                             const uint32_t &index, const Vec2f &uv, Vec3f &N,
                             Vec2f &st) const {
-    N = normalize(P - center);
+    N = Vec3f::normalize(P - center);
   }
 
   Vec3f center;
@@ -146,27 +123,27 @@ bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
                           float &u, float &v) {
   Vec3f edge1 = v1 - v0;
   Vec3f edge2 = v2 - v0;
-  Vec3f pvec = crossProduct(dir, edge2);
-  float det = dotProduct(edge1, pvec);
+  Vec3f pvec = Vec3f::crossProduct(dir, edge2);
+  float det = Vec3f::dotProduct(edge1, pvec);
   if (det == 0 || det < 0) {
     return false;
   }
 
   Vec3f tvec = orig - v0;
-  u = dotProduct(tvec, pvec);
+  u = Vec3f::dotProduct(tvec, pvec);
   if (u < 0 || u > det) {
     return false;
   }
 
-  Vec3f qvec = crossProduct(tvec, edge1);
-  v = dotProduct(dir, qvec);
+  Vec3f qvec = Vec3f::crossProduct(tvec, edge1);
+  v = Vec3f::dotProduct(dir, qvec);
   if (v < 0 || u + v > det) {
     return false;
   }
 
   float invDet = 1 / det;
 
-  tnear = dotProduct(edge2, qvec) * invDet;
+  tnear = Vec3f::dotProduct(edge2, qvec) * invDet;
   u *= invDet;
   v *= invDet;
 
@@ -219,9 +196,9 @@ public:
     const Vec3f &v0 = vertices[vertexIndex[index * 3]];
     const Vec3f &v1 = vertices[vertexIndex[index * 3 + 1]];
     const Vec3f &v2 = vertices[vertexIndex[index * 3 + 2]];
-    Vec3f e0 = normalize(v1 - v0);
-    Vec3f e1 = normalize(v2 - v1);
-    N = normalize(crossProduct(e0, e1));
+    Vec3f e0 = Vec3f::normalize(v1 - v0);
+    Vec3f e1 = Vec3f::normalize(v2 - v1);
+    N = Vec3f::normalize(Vec3f::crossProduct(e0, e1));
     const Vec2f &st0 = stCoordinates[vertexIndex[index * 3]];
     const Vec2f &st1 = stCoordinates[vertexIndex[index * 3 + 1]];
     const Vec2f &st2 = stCoordinates[vertexIndex[index * 3 + 2]];
@@ -232,7 +209,7 @@ public:
     float scale = 5;
     float pattern =
         (fmodf(st.x * scale, 1) > 0.5) ^ (fmodf(st.y * scale, 1) > 0.5);
-    return mix(Vec3f(0.815, 0.235, 0.031), Vec3f(0.937, 0.937, 0.231), pattern);
+    return Vec3f::mix(Vec3f(0.815, 0.235, 0.031), Vec3f(0.937, 0.937, 0.231), pattern);
   }
 
   std::unique_ptr<Vec3f[]> vertices;
@@ -245,7 +222,7 @@ public:
 // Compute reflection direction
 // [/comment]
 Vec3f reflect(const Vec3f &I, const Vec3f &N) {
-  return I - 2 * dotProduct(I, N) * N;
+  return I - 2 * Vec3f::dotProduct(I, N) * N;
 }
 
 // [comment]
@@ -263,7 +240,7 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
 // the normal N
 // [/comment]
 Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) {
-  float cosi = clamp(-1, 1, dotProduct(I, N));
+  float cosi = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etai = 1, etat = ior;
   Vec3f n = N;
   if (cosi < 0) {
@@ -289,7 +266,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) {
 // \param[out] kr is the amount of light reflected
 // [/comment]
 void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) {
-  float cosi = clamp(-1, 1, dotProduct(I, N));
+  float cosi = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etai = 1, etat = ior;
   if (cosi > 0) {
     std::swap(etai, etat);
@@ -394,12 +371,12 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
     Vec3f tmp = hitPoint;
     switch (hitObject->materialType) {
     case REFLECTION_AND_REFRACTION: {
-      Vec3f reflectionDirection = normalize(reflect(dir, N));
-      Vec3f refractionDirection = normalize(refract(dir, N, hitObject->ior));
-      Vec3f reflectionRayOrig = (dotProduct(reflectionDirection, N) < 0)
+      Vec3f reflectionDirection = Vec3f::normalize(reflect(dir, N));
+      Vec3f refractionDirection = Vec3f::normalize(refract(dir, N, hitObject->ior));
+      Vec3f reflectionRayOrig = (Vec3f::dotProduct(reflectionDirection, N) < 0)
                                     ? hitPoint - N * options.bias
                                     : hitPoint + N * options.bias;
-      Vec3f refractionRayOrig = (dotProduct(refractionDirection, N) < 0)
+      Vec3f refractionRayOrig = (Vec3f::dotProduct(refractionDirection, N) < 0)
                                     ? hitPoint - N * options.bias
                                     : hitPoint + N * options.bias;
       Vec3f reflectionColor = castRay(reflectionRayOrig, reflectionDirection,
@@ -415,7 +392,7 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
       float kr;
       fresnel(dir, N, hitObject->ior, kr);
       Vec3f reflectionDirection = reflect(dir, N);
-      Vec3f reflectionRayOrig = (dotProduct(reflectionDirection, N) < 0)
+      Vec3f reflectionRayOrig = (Vec3f::dotProduct(reflectionDirection, N) < 0)
                                     ? hitPoint + N * options.bias
                                     : hitPoint - N * options.bias;
       hitColor = castRay(reflectionRayOrig, reflectionDirection, objects,
@@ -429,7 +406,7 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
       // is composed of a diffuse and a specular reflection component.
       // [/comment]
       Vec3f lightAmt = 0, specularColor = 0;
-      Vec3f shadowPointOrig = (dotProduct(dir, N) < 0)
+      Vec3f shadowPointOrig = (Vec3f::dotProduct(dir, N) < 0)
                                   ? hitPoint + N * options.bias
                                   : hitPoint - N * options.bias;
       // [comment]
@@ -440,9 +417,9 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
       for (uint32_t i = 0; i < lights.size(); ++i) {
         Vec3f lightDir = lights[i]->position - hitPoint;
         // square of the distance between hitPoint and the light
-        float lightDistance2 = dotProduct(lightDir, lightDir);
-        lightDir = normalize(lightDir);
-        float LdotN = std::max(0.f, dotProduct(lightDir, N));
+        float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
+        lightDir = Vec3f::normalize(lightDir);
+        float LdotN = std::max(0.f, Vec3f::dotProduct(lightDir, N));
         Object *shadowHitObject = nullptr;
         float tNearShadow = kInfinity;
         // is the point in shadow, and is the nearest occluding object closer to
@@ -453,7 +430,7 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
         lightAmt += (1 - inShadow) * lights[i]->intensity * LdotN;
         Vec3f reflectionDirection = reflect(-lightDir, N);
         specularColor +=
-            powf(std::max(0.f, -dotProduct(reflectionDirection, dir)),
+            powf(std::max(0.f, -Vec3f::dotProduct(reflectionDirection, dir)),
                  hitObject->specularExponent) *
             lights[i]->intensity;
       }
@@ -486,7 +463,7 @@ void render(const Options &options,
       float x =
           (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
       float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-      Vec3f dir = normalize(Vec3f(x, y, -1));
+      Vec3f dir = Vec3f::normalize(Vec3f(x, y, -1));
       *(pix++) = castRay(orig, dir, objects, lights, options, 0);
     }
   }
