@@ -40,7 +40,8 @@ public:
     return a.x * b.x + a.y * b.y + a.z * b.z;
   }
 
-  static inline Vec3f mix(const Vec3f &a, const Vec3f &b, const float &mixValue) {
+  static inline Vec3f mix(const Vec3f &a, const Vec3f &b,
+                          const float &mixValue) {
     return a * (1 - mixValue) + b * mixValue;
   }
 
