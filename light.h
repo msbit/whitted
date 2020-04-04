@@ -5,7 +5,7 @@
 
 class Light {
 public:
-  Light(const Vec3f &p, const Vec3f &i) : position(p), intensity(i) {}
+  Light(const Vec3f &, const Vec3f &);
   Vec3f position;
   Vec3f intensity;
 };
