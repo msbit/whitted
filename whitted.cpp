@@ -37,6 +37,7 @@
 #include <utility>
 #include <vector>
 
+#include "light.h"
 #include "vec2f.h"
 #include "vec3f.h"
 
@@ -79,13 +80,6 @@ struct Options {
   uint8_t maxDepth;
   Vec3f backgroundColor;
   float bias;
-};
-
-class Light {
-public:
-  Light(const Vec3f &p, const Vec3f &i) : position(p), intensity(i) {}
-  Vec3f position;
-  Vec3f intensity;
 };
 
 enum MaterialType { DIFFUSE_AND_GLOSSY, REFLECTION_AND_REFRACTION, REFLECTION };
