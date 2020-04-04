@@ -19,7 +19,8 @@ public:
   // material properties
   MaterialType materialType;
   float ior;
-  float Kd, Ks;
+  float Kd;
+  float Ks;
   Vec3f diffuseColor;
   float specularExponent;
 };

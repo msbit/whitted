@@ -9,7 +9,8 @@ public:
   Vec2f operator*(const float &)const;
   Vec2f operator+(const Vec2f &) const;
 
-  float x, y;
+  float x;
+  float y;
 };
 
 #endif

@@ -50,7 +50,9 @@ bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
     const Vec3f &v0 = vertices[vertexIndex[k * 3]];
     const Vec3f &v1 = vertices[vertexIndex[k * 3 + 1]];
     const Vec3f &v2 = vertices[vertexIndex[k * 3 + 2]];
-    float t, u, v;
+    float t;
+    float u;
+    float v;
     if (rayTriangleIntersect(v0, v1, v2, origin, direction, t, u, v) &&
         t < tnear) {
       tnear = t;

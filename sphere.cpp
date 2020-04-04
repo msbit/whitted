@@ -34,7 +34,8 @@ bool Sphere::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
   const float a = Vec3f::dotProduct(dir, dir);
   const float b = 2 * Vec3f::dotProduct(dir, L);
   const float c = Vec3f::dotProduct(L, L) - radius2;
-  float t0, t1;
+  float t0;
+  float t1;
   if (!solveQuadratic(a, b, c, t0, t1)) {
     return false;
   }

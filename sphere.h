@@ -16,7 +16,8 @@ public:
                             const Vec2f &, Vec3f &, Vec2f &) const;
 
   Vec3f center;
-  float radius, radius2;
+  float radius;
+  float radius2;
 };
 
 #endif

@@ -27,7 +27,9 @@ public:
 
   static Vec3f normalize(const Vec3f &);
 
-  float x, y, z;
+  float x;
+  float y;
+  float z;
 };
 
 #endif
