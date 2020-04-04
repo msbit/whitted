@@ -46,11 +46,11 @@
 
 const float kInfinity = std::numeric_limits<float>::max();
 
-inline float clamp(const float &low, const float &high, const float &value) {
+float clamp(const float &low, const float &high, const float &value) {
   return std::max(low, std::min(high, value));
 }
 
-inline float deg2rad(const float &deg) { return deg * M_PI / 180; }
+float deg2rad(const float &deg) { return deg * M_PI / 180; }
 
 struct Options {
   uint32_t width;
