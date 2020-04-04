@@ -36,23 +36,12 @@ bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
   return true;
 }
 
-MeshTriangle::MeshTriangle(const Vec3f *verts, const uint32_t *vertsIndex,
-                           const uint32_t &numTriangles, const Vec2f *st)
-    : numTriangles(numTriangles) {
-  uint32_t maxIndex = 0;
-  for (uint32_t i = 0; i < numTriangles * 3; ++i) {
-    if (vertsIndex[i] > maxIndex) {
-      maxIndex = vertsIndex[i];
-    }
-  }
-  maxIndex += 1;
-  vertices = std::unique_ptr<Vec3f[]>(new Vec3f[maxIndex]);
-  memcpy(vertices.get(), verts, sizeof(Vec3f) * maxIndex);
-  vertexIndex = std::unique_ptr<uint32_t[]>(new uint32_t[numTriangles * 3]);
-  memcpy(vertexIndex.get(), vertsIndex, sizeof(uint32_t) * numTriangles * 3);
-  stCoordinates = std::unique_ptr<Vec2f[]>(new Vec2f[maxIndex]);
-  memcpy(stCoordinates.get(), st, sizeof(Vec2f) * maxIndex);
-}
+MeshTriangle::MeshTriangle(const std::vector<Vec3f> &verts,
+                           const std::vector<uint32_t> &vertsIndex,
+                           const uint32_t &numTriangles,
+                           const std::vector<Vec2f> &st)
+    : numTriangles(numTriangles), vertices(verts), stCoordinates(st),
+      vertexIndex(vertsIndex) {}
 
 bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
                              float &tnear, uint32_t &index, Vec2f &uv) const {

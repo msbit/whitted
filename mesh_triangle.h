@@ -1,7 +1,7 @@
 #ifndef __MESH_TRIANGLE__
 #define __MESH_TRIANGLE__
 
-#include <memory>
+#include <vector>
 
 #include "object.h"
 #include "vec2f.h"
@@ -9,8 +9,8 @@
 
 class MeshTriangle : public Object {
 public:
-  MeshTriangle(const Vec3f *, const uint32_t *, const uint32_t &,
-               const Vec2f *);
+  MeshTriangle(const std::vector<Vec3f> &, const std::vector<uint32_t> &,
+               const uint32_t &, const std::vector<Vec2f> &);
 
   bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
                  Vec2f &) const;
@@ -20,10 +20,10 @@ public:
 
   Vec3f evalDiffuseColor(const Vec2f &) const;
 
-  std::unique_ptr<Vec3f[]> vertices;
+  std::vector<Vec3f> vertices;
   uint32_t numTriangles;
-  std::unique_ptr<uint32_t[]> vertexIndex;
-  std::unique_ptr<Vec2f[]> stCoordinates;
+  std::vector<uint32_t> vertexIndex;
+  std::vector<Vec2f> stCoordinates;
 };
 
 #endif
