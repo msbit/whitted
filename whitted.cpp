@@ -56,7 +56,6 @@ struct Options {
   uint32_t width;
   uint32_t height;
   float fov;
-  float imageAspectRatio;
   uint8_t maxDepth;
   Vec3f backgroundColor;
   float bias;
@@ -362,13 +361,14 @@ int main(int argc, char **argv) {
   lights.push_back(std::unique_ptr<Light>(new Light(Vec3f(30, 50, -12), 1)));
 
   // setting up options
-  Options options;
-  options.width = 640;
-  options.height = 480;
-  options.fov = 90;
-  options.backgroundColor = Vec3f(0.235294, 0.67451, 0.843137);
-  options.maxDepth = 5;
-  options.bias = 0.00001;
+  Options options = {
+    width : 640,
+    height : 480,
+    fov : 90,
+    maxDepth : 5,
+    backgroundColor : Vec3f(0.235294, 0.67451, 0.843137),
+    bias : 0.00001
+  };
 
   // finally, render
   render(options, objects, lights);
