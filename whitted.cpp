@@ -46,8 +46,8 @@
 
 const float kInfinity = std::numeric_limits<float>::max();
 
-inline float clamp(const float &lo, const float &hi, const float &v) {
-  return std::max(lo, std::min(hi, v));
+inline float clamp(const float &low, const float &high, const float &value) {
+  return std::max(low, std::min(high, value));
 }
 
 inline float deg2rad(const float &deg) { return deg * M_PI / 180; }
@@ -83,19 +83,19 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
 // the normal N
 // [/comment]
 Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) {
-  float cosi = clamp(-1, 1, Vec3f::dotProduct(I, N));
-  float etai = 1;
-  float etat = ior;
+  float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
+  float etaI = 1;
+  float etaT = ior;
   Vec3f n = N;
-  if (cosi < 0) {
-    cosi = -cosi;
+  if (cosI < 0) {
+    cosI = -cosI;
   } else {
-    std::swap(etai, etat);
+    std::swap(etaI, etaT);
     n = -N;
   }
-  const float eta = etai / etat;
-  const float k = 1 - eta * eta * (1 - cosi * cosi);
-  return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n;
+  const float eta = etaI / etaT;
+  const float k = 1 - eta * eta * (1 - cosI * cosI);
+  return k < 0 ? 0 : eta * I + (eta * cosI - sqrtf(k)) * n;
 }
 
 // [comment]
@@ -110,24 +110,24 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) {
 // \param[out] kr is the amount of light reflected
 // [/comment]
 void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) {
-  float cosi = clamp(-1, 1, Vec3f::dotProduct(I, N));
-  float etai = 1;
-  float etat = ior;
-  if (cosi > 0) {
-    std::swap(etai, etat);
+  float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
+  float etaI = 1;
+  float etaT = ior;
+  if (cosI > 0) {
+    std::swap(etaI, etaT);
   }
   // Compute sini using Snell's law
-  const float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+  const float sinT = etaI / etaT * sqrtf(std::max(0.f, 1 - cosI * cosI));
   // Total internal reflection
-  if (sint >= 1) {
+  if (sinT >= 1) {
     kr = 1;
   } else {
-    const float cost = sqrtf(std::max(0.f, 1 - sint * sint));
-    cosi = fabsf(cosi);
+    const float cosT = sqrtf(std::max(0.f, 1 - sinT * sinT));
+    cosI = fabsf(cosI);
     const float Rs =
-        ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+        ((etaT * cosI) - (etaI * cosT)) / ((etaT * cosI) + (etaI * cosT));
     const float Rp =
-        ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+        ((etaI * cosI) - (etaT * cosT)) / ((etaI * cosI) + (etaT * cosT));
     kr = (Rs * Rs + Rp * Rp) / 2;
   }
   // As a consequence of the conservation of energy, transmittance is given by:
@@ -137,9 +137,9 @@ void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) {
 // [comment]
 // Returns true if the ray intersects an object, false otherwise.
 //
-// \param orig is the ray origin
+// \param origin is the ray origin
 //
-// \param dir is the ray direction
+// \param direction is the ray direction
 //
 // \param objects is the list of objects the scene contains
 //
@@ -157,7 +157,7 @@ void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) {
 // \param isShadowRay is it a shadow ray. We can return from the function sooner
 // as soon as we have found a hit.
 // [/comment]
-bool trace(const Vec3f &orig, const Vec3f &dir,
+bool trace(const Vec3f &origin, const Vec3f &direction,
            const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
            uint32_t &index, Vec2f &uv, Object **hitObject) {
   *hitObject = nullptr;
@@ -165,7 +165,7 @@ bool trace(const Vec3f &orig, const Vec3f &dir,
     float tNearK = kInfinity;
     uint32_t indexK;
     Vec2f uvK;
-    if (objects[k]->intersect(orig, dir, tNearK, indexK, uvK) &&
+    if (objects[k]->intersect(origin, direction, tNearK, indexK, uvK) &&
         tNearK < tNear) {
       *hitObject = objects[k].get();
       tNear = tNearK;
@@ -195,7 +195,7 @@ bool trace(const Vec3f &orig, const Vec3f &dir,
 // If the surface is duffuse/glossy we use the Phong illumation model to compute
 // the color at the intersection point.
 // [/comment]
-Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
+Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
               const std::vector<std::unique_ptr<Object>> &objects,
               const std::vector<std::unique_ptr<Light>> &lights,
               const Options &options, uint32_t depth, bool test = false) {
@@ -204,49 +204,49 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
   }
 
   Vec3f hitColor = options.backgroundColor;
-  float tnear = kInfinity;
+  float tNear = kInfinity;
   Vec2f uv;
   uint32_t index = 0;
   Object *hitObject = nullptr;
-  if (trace(orig, dir, objects, tnear, index, uv, &hitObject)) {
-    const Vec3f hitPoint = orig + dir * tnear;
+  if (trace(origin, direction, objects, tNear, index, uv, &hitObject)) {
+    const Vec3f hitPoint = origin + direction * tNear;
     Vec3f N;  // normal
     Vec2f st; // st coordinates
-    hitObject->getSurfaceProperties(hitPoint, dir, index, uv, N, st);
+    hitObject->getSurfaceProperties(hitPoint, direction, index, uv, N, st);
     const Vec3f tmp = hitPoint;
     switch (hitObject->materialType) {
     case REFLECTION_AND_REFRACTION: {
-      const Vec3f reflectionDirection = Vec3f::normalize(reflect(dir, N));
+      const Vec3f reflectionDirection = Vec3f::normalize(reflect(direction, N));
       const Vec3f refractionDirection =
-          Vec3f::normalize(refract(dir, N, hitObject->ior));
-      const Vec3f reflectionRayOrig =
+          Vec3f::normalize(refract(direction, N, hitObject->ior));
+      const Vec3f reflectionRayOrigin =
           (Vec3f::dotProduct(reflectionDirection, N) < 0)
               ? hitPoint - N * options.bias
               : hitPoint + N * options.bias;
-      const Vec3f refractionRayOrig =
+      const Vec3f refractionRayOrigin =
           (Vec3f::dotProduct(refractionDirection, N) < 0)
               ? hitPoint - N * options.bias
               : hitPoint + N * options.bias;
       const Vec3f reflectionColor =
-          castRay(reflectionRayOrig, reflectionDirection, objects, lights,
-                  options, depth + 1, 1);
+          castRay(reflectionRayOrigin, reflectionDirection, objects, lights,
+                  options, depth + 1, true);
       const Vec3f refractionColor =
-          castRay(refractionRayOrig, refractionDirection, objects, lights,
-                  options, depth + 1, 1);
+          castRay(refractionRayOrigin, refractionDirection, objects, lights,
+                  options, depth + 1, true);
       float kr;
-      fresnel(dir, N, hitObject->ior, kr);
+      fresnel(direction, N, hitObject->ior, kr);
       hitColor = reflectionColor * kr + refractionColor * (1 - kr);
       break;
     }
     case REFLECTION: {
       float kr;
-      fresnel(dir, N, hitObject->ior, kr);
-      const Vec3f reflectionDirection = reflect(dir, N);
-      const Vec3f reflectionRayOrig =
+      fresnel(direction, N, hitObject->ior, kr);
+      const Vec3f reflectionDirection = reflect(direction, N);
+      const Vec3f reflectionRayOrigin =
           (Vec3f::dotProduct(reflectionDirection, N) < 0)
               ? hitPoint + N * options.bias
               : hitPoint - N * options.bias;
-      hitColor = castRay(reflectionRayOrig, reflectionDirection, objects,
+      hitColor = castRay(reflectionRayOrigin, reflectionDirection, objects,
                          lights, options, depth + 1) *
                  kr;
       break;
@@ -258,7 +258,7 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
       // [/comment]
       Vec3f lightAmt = 0;
       Vec3f specularColor = 0;
-      const Vec3f shadowPointOrig = (Vec3f::dotProduct(dir, N) < 0)
+      const Vec3f shadowPointOrig = (Vec3f::dotProduct(direction, N) < 0)
                                         ? hitPoint + N * options.bias
                                         : hitPoint - N * options.bias;
       // [comment]
@@ -282,7 +282,8 @@ Vec3f castRay(const Vec3f &orig, const Vec3f &dir,
         lightAmt += (1 - inShadow) * lights[i]->intensity * LdotN;
         const Vec3f reflectionDirection = reflect(-lightDir, N);
         specularColor +=
-            powf(std::max(0.f, -Vec3f::dotProduct(reflectionDirection, dir)),
+            powf(std::max(0.f,
+                          -Vec3f::dotProduct(reflectionDirection, direction)),
                  hitObject->specularExponent) *
             lights[i]->intensity;
       }
@@ -308,15 +309,15 @@ void render(const Options &options,
   Vec3f *pix = framebuffer;
   const float scale = tan(deg2rad(options.fov * 0.5));
   const float imageAspectRatio = options.width / (float)options.height;
-  const Vec3f orig(0);
+  const Vec3f origin(0);
   for (uint32_t j = 0; j < options.height; ++j) {
     for (uint32_t i = 0; i < options.width; ++i) {
       // generate primary ray direction
       const float x =
           (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
       const float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-      const Vec3f dir = Vec3f::normalize({x, y, -1});
-      *(pix++) = castRay(orig, dir, objects, lights, options, 0);
+      const Vec3f direction = Vec3f::normalize({x, y, -1});
+      *(pix++) = castRay(origin, direction, objects, lights, options, 0);
     }
   }
 
@@ -347,15 +348,15 @@ int main(int argc, char **argv) {
   std::vector<std::unique_ptr<Object>> objects;
   std::vector<std::unique_ptr<Light>> lights;
 
-  Sphere *sph1 = new Sphere({-1, 0, -12}, 2);
-  sph1->materialType = DIFFUSE_AND_GLOSSY;
-  sph1->diffuseColor = {0.6, 0.7, 0.8};
-  Sphere *sph2 = new Sphere({0.5, -0.5, -8}, 1.5);
-  sph2->ior = 1.5;
-  sph2->materialType = REFLECTION_AND_REFRACTION;
+  Sphere *sphere1 = new Sphere({-1, 0, -12}, 2);
+  sphere1->materialType = DIFFUSE_AND_GLOSSY;
+  sphere1->diffuseColor = {0.6, 0.7, 0.8};
+  Sphere *sphere2 = new Sphere({0.5, -0.5, -8}, 1.5);
+  sphere2->ior = 1.5;
+  sphere2->materialType = REFLECTION_AND_REFRACTION;
 
-  objects.push_back(std::unique_ptr<Sphere>(sph1));
-  objects.push_back(std::unique_ptr<Sphere>(sph2));
+  objects.push_back(std::unique_ptr<Sphere>(sphere1));
+  objects.push_back(std::unique_ptr<Sphere>(sphere2));
 
   const Vec3f verts[4] = {
       {-5, -3, -6}, {5, -3, -6}, {5, -3, -16}, {-5, -3, -16}};

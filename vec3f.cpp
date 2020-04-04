@@ -7,19 +7,19 @@ Vec3f::Vec3f() : x(0), y(0), z(0) {}
 Vec3f::Vec3f(float s) : x(s), y(s), z(s) {}
 Vec3f::Vec3f(float x, float y, float z) : x(x), y(y), z(z) {}
 
-Vec3f Vec3f::operator*(const float &r) const { return {x * r, y * r, z * r}; }
-Vec3f Vec3f::operator*(const Vec3f &v) const {
-  return {x * v.x, y * v.y, z * v.z};
+Vec3f Vec3f::operator*(const float &s) const { return {x * s, y * s, z * s}; }
+Vec3f Vec3f::operator*(const Vec3f &other) const {
+  return {x * other.x, y * other.y, z * other.z};
 }
-Vec3f Vec3f::operator-(const Vec3f &v) const {
-  return {x - v.x, y - v.y, z - v.z};
+Vec3f Vec3f::operator-(const Vec3f &other) const {
+  return {x - other.x, y - other.y, z - other.z};
 }
-Vec3f Vec3f::operator+(const Vec3f &v) const {
-  return {x + v.x, y + v.y, z + v.z};
+Vec3f Vec3f::operator+(const Vec3f &other) const {
+  return {x + other.x, y + other.y, z + other.z};
 }
 Vec3f Vec3f::operator-() const { return {-x, -y, -z}; }
-Vec3f &Vec3f::operator+=(const Vec3f &v) {
-  x += v.x, y += v.y, z += v.z;
+Vec3f &Vec3f::operator+=(const Vec3f &other) {
+  x += other.x, y += other.y, z += other.z;
   return *this;
 }
 
@@ -45,8 +45,8 @@ Vec3f Vec3f::normalize(const Vec3f &v) {
   return v;
 }
 
-Vec3f operator*(const float &r, const Vec3f &v) {
-  return {v.x * r, v.y * r, v.z * r};
+Vec3f operator*(const float &s, const Vec3f &v) {
+  return {v.x * s, v.y * s, v.z * s};
 }
 
 std::ostream &operator<<(std::ostream &os, const Vec3f &v) {

@@ -5,24 +5,24 @@
 #include "mesh_triangle.h"
 
 bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-                          const Vec3f &orig, const Vec3f &dir, float &tnear,
-                          float &u, float &v) {
+                          const Vec3f &origin, const Vec3f &direction,
+                          float &tnear, float &u, float &v) {
   const Vec3f edge1 = v1 - v0;
   const Vec3f edge2 = v2 - v0;
-  const Vec3f pvec = Vec3f::crossProduct(dir, edge2);
+  const Vec3f pvec = Vec3f::crossProduct(direction, edge2);
   const float det = Vec3f::dotProduct(edge1, pvec);
   if (det == 0 || det < 0) {
     return false;
   }
 
-  const Vec3f tvec = orig - v0;
+  const Vec3f tvec = origin - v0;
   u = Vec3f::dotProduct(tvec, pvec);
   if (u < 0 || u > det) {
     return false;
   }
 
   const Vec3f qvec = Vec3f::crossProduct(tvec, edge1);
-  v = Vec3f::dotProduct(dir, qvec);
+  v = Vec3f::dotProduct(direction, qvec);
   if (v < 0 || u + v > det) {
     return false;
   }
@@ -54,15 +54,16 @@ MeshTriangle::MeshTriangle(const Vec3f *verts, const uint32_t *vertsIndex,
   memcpy(stCoordinates.get(), st, sizeof(Vec2f) * maxIndex);
 }
 
-bool MeshTriangle::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
-                             uint32_t &index, Vec2f &uv) const {
+bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
+                             float &tnear, uint32_t &index, Vec2f &uv) const {
   bool intersect = false;
   for (uint32_t k = 0; k < numTriangles; ++k) {
     const Vec3f &v0 = vertices[vertexIndex[k * 3]];
     const Vec3f &v1 = vertices[vertexIndex[k * 3 + 1]];
     const Vec3f &v2 = vertices[vertexIndex[k * 3 + 2]];
     float t, u, v;
-    if (rayTriangleIntersect(v0, v1, v2, orig, dir, t, u, v) && t < tnear) {
+    if (rayTriangleIntersect(v0, v1, v2, origin, direction, t, u, v) &&
+        t < tnear) {
       tnear = t;
       uv.x = u;
       uv.y = v;
