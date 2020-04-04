@@ -251,6 +251,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
                  kr;
       break;
     }
+    case DIFFUSE_AND_GLOSSY:
     default: {
       // [comment]
       // We use the Phong illumation model int the default case. The phong model
