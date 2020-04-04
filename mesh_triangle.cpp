@@ -7,27 +7,27 @@
 bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
                           const Vec3f &orig, const Vec3f &dir, float &tnear,
                           float &u, float &v) {
-  Vec3f edge1 = v1 - v0;
-  Vec3f edge2 = v2 - v0;
-  Vec3f pvec = Vec3f::crossProduct(dir, edge2);
-  float det = Vec3f::dotProduct(edge1, pvec);
+  const Vec3f edge1 = v1 - v0;
+  const Vec3f edge2 = v2 - v0;
+  const Vec3f pvec = Vec3f::crossProduct(dir, edge2);
+  const float det = Vec3f::dotProduct(edge1, pvec);
   if (det == 0 || det < 0) {
     return false;
   }
 
-  Vec3f tvec = orig - v0;
+  const Vec3f tvec = orig - v0;
   u = Vec3f::dotProduct(tvec, pvec);
   if (u < 0 || u > det) {
     return false;
   }
 
-  Vec3f qvec = Vec3f::crossProduct(tvec, edge1);
+  const Vec3f qvec = Vec3f::crossProduct(tvec, edge1);
   v = Vec3f::dotProduct(dir, qvec);
   if (v < 0 || u + v > det) {
     return false;
   }
 
-  float invDet = 1 / det;
+  const float invDet = 1 / det;
 
   tnear = Vec3f::dotProduct(edge2, qvec) * invDet;
   u *= invDet;
@@ -80,8 +80,8 @@ void MeshTriangle::getSurfaceProperties(const Vec3f &P, const Vec3f &I,
   const Vec3f &v0 = vertices[vertexIndex[index * 3]];
   const Vec3f &v1 = vertices[vertexIndex[index * 3 + 1]];
   const Vec3f &v2 = vertices[vertexIndex[index * 3 + 2]];
-  Vec3f e0 = Vec3f::normalize(v1 - v0);
-  Vec3f e1 = Vec3f::normalize(v2 - v1);
+  const Vec3f e0 = Vec3f::normalize(v1 - v0);
+  const Vec3f e1 = Vec3f::normalize(v2 - v1);
   N = Vec3f::normalize(Vec3f::crossProduct(e0, e1));
   const Vec2f &st0 = stCoordinates[vertexIndex[index * 3]];
   const Vec2f &st1 = stCoordinates[vertexIndex[index * 3 + 1]];
@@ -90,8 +90,8 @@ void MeshTriangle::getSurfaceProperties(const Vec3f &P, const Vec3f &I,
 }
 
 Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &st) const {
-  float scale = 5;
-  float pattern =
+  const float scale = 5;
+  const float pattern =
       (fmodf(st.x * scale, 1) > 0.5) ^ (fmodf(st.y * scale, 1) > 0.5);
   return Vec3f::mix({0.815, 0.235, 0.031}, {0.937, 0.937, 0.231}, pattern);
 }
