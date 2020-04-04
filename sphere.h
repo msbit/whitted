@@ -1,6 +1,9 @@
 #ifndef __SPHERE__
 #define __SPHERE__
 
+#include <cmath>
+#include <utility>
+
 #include "object.h"
 #include "vec2f.h"
 #include "vec3f.h"

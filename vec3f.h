@@ -1,6 +1,7 @@
 #ifndef __VEC3F__
 #define __VEC3F__
 
+#include <cmath>
 #include <ostream>
 
 class Vec3f {
