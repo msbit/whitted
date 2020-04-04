@@ -161,7 +161,7 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
            const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
            uint32_t &index, Vec2f &uv, Object **hitObject) {
   *hitObject = nullptr;
-  for (const auto& object: objects) {
+  for (const auto &object : objects) {
     float tNearK = kInfinity;
     uint32_t indexK;
     Vec2f uvK;
@@ -266,7 +266,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
       // We also apply the lambert cosine law here though we haven't explained
       // yet what this means.
       // [/comment]
-      for (const auto& light: lights) {
+      for (const auto &light : lights) {
         Vec3f lightDir = light->position - hitPoint;
         // square of the distance between hitPoint and the light
         const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
