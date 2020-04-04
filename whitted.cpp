@@ -371,7 +371,7 @@ int main(int argc, char **argv) {
   lights.push_back(std::unique_ptr<Light>(new Light({30, 50, -12}, 1)));
 
   // setting up options
-  const Options options = {640,    480, 90, 5, {0.235294, 0.67451, 0.843137},
+  const Options options = {1600,   1600, 90, 5, {0.235294, 0.67451, 0.843137},
                            0.00001};
 
   // finally, render
