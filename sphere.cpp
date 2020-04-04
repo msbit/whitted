@@ -23,8 +23,8 @@ bool solveQuadratic(const float &a, const float &b, const float &c, float &x0,
   return true;
 }
 
-Sphere::Sphere(const Vec3f &c, const float &r)
-    : center(c), radius(r), radius2(r * r) {}
+Sphere::Sphere(const Vec3f &center, const float &radius)
+    : center(center), radius(radius), radius2(radius * radius) {}
 
 bool Sphere::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
                        uint32_t &index, Vec2f &uv) const {
