@@ -307,7 +307,7 @@ void render(const Options &options,
       float x =
           (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
       float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-      Vec3f dir = Vec3f::normalize(Vec3f(x, y, -1));
+      Vec3f dir = Vec3f::normalize({x, y, -1});
       *(pix++) = castRay(orig, dir, objects, lights, options, 0);
     }
   }
@@ -339,10 +339,10 @@ int main(int argc, char **argv) {
   std::vector<std::unique_ptr<Object>> objects;
   std::vector<std::unique_ptr<Light>> lights;
 
-  Sphere *sph1 = new Sphere(Vec3f(-1, 0, -12), 2);
+  Sphere *sph1 = new Sphere({-1, 0, -12}, 2);
   sph1->materialType = DIFFUSE_AND_GLOSSY;
-  sph1->diffuseColor = Vec3f(0.6, 0.7, 0.8);
-  Sphere *sph2 = new Sphere(Vec3f(0.5, -0.5, -8), 1.5);
+  sph1->diffuseColor = {0.6, 0.7, 0.8};
+  Sphere *sph2 = new Sphere({0.5, -0.5, -8}, 1.5);
   sph2->ior = 1.5;
   sph2->materialType = REFLECTION_AND_REFRACTION;
 
@@ -357,18 +357,11 @@ int main(int argc, char **argv) {
 
   objects.push_back(std::unique_ptr<MeshTriangle>(mesh));
 
-  lights.push_back(std::unique_ptr<Light>(new Light(Vec3f(-20, 70, 20), 0.5)));
-  lights.push_back(std::unique_ptr<Light>(new Light(Vec3f(30, 50, -12), 1)));
+  lights.push_back(std::unique_ptr<Light>(new Light({-20, 70, 20}, 0.5)));
+  lights.push_back(std::unique_ptr<Light>(new Light({30, 50, -12}, 1)));
 
   // setting up options
-  Options options = {
-    width : 640,
-    height : 480,
-    fov : 90,
-    maxDepth : 5,
-    backgroundColor : Vec3f(0.235294, 0.67451, 0.843137),
-    bias : 0.00001
-  };
+  Options options = {640, 480, 90, 5, {0.235294, 0.67451, 0.843137}, 0.00001};
 
   // finally, render
   render(options, objects, lights);

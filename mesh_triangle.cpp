@@ -37,9 +37,10 @@ bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
 }
 
 MeshTriangle::MeshTriangle(const Vec3f *verts, const uint32_t *vertsIndex,
-                           const uint32_t &numTris, const Vec2f *st) {
+                           const uint32_t &numTriangles, const Vec2f *st)
+    : numTriangles(numTriangles) {
   uint32_t maxIndex = 0;
-  for (uint32_t i = 0; i < numTris * 3; ++i) {
+  for (uint32_t i = 0; i < numTriangles * 3; ++i) {
     if (vertsIndex[i] > maxIndex) {
       maxIndex = vertsIndex[i];
     }
@@ -47,9 +48,8 @@ MeshTriangle::MeshTriangle(const Vec3f *verts, const uint32_t *vertsIndex,
   maxIndex += 1;
   vertices = std::unique_ptr<Vec3f[]>(new Vec3f[maxIndex]);
   memcpy(vertices.get(), verts, sizeof(Vec3f) * maxIndex);
-  vertexIndex = std::unique_ptr<uint32_t[]>(new uint32_t[numTris * 3]);
-  memcpy(vertexIndex.get(), vertsIndex, sizeof(uint32_t) * numTris * 3);
-  numTriangles = numTris;
+  vertexIndex = std::unique_ptr<uint32_t[]>(new uint32_t[numTriangles * 3]);
+  memcpy(vertexIndex.get(), vertsIndex, sizeof(uint32_t) * numTriangles * 3);
   stCoordinates = std::unique_ptr<Vec2f[]>(new Vec2f[maxIndex]);
   memcpy(stCoordinates.get(), st, sizeof(Vec2f) * maxIndex);
 }
@@ -93,6 +93,5 @@ Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &st) const {
   float scale = 5;
   float pattern =
       (fmodf(st.x * scale, 1) > 0.5) ^ (fmodf(st.y * scale, 1) > 0.5);
-  return Vec3f::mix(Vec3f(0.815, 0.235, 0.031), Vec3f(0.937, 0.937, 0.231),
-                    pattern);
+  return Vec3f::mix({0.815, 0.235, 0.031}, {0.937, 0.937, 0.231}, pattern);
 }
