@@ -6,8 +6,7 @@
 
 enum MaterialType { DIFFUSE_AND_GLOSSY, REFLECTION_AND_REFRACTION, REFLECTION };
 
-class Object {
-public:
+struct Object {
   Object();
   virtual ~Object();
   virtual bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,

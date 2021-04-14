@@ -3,8 +3,7 @@
 
 #include <ostream>
 
-class Vec3f {
-public:
+struct Vec3f {
   Vec3f();
   Vec3f(float);
   Vec3f(float, float, float);

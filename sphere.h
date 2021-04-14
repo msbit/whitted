@@ -5,8 +5,7 @@
 #include "vec2f.h"
 #include "vec3f.h"
 
-class Sphere : public Object {
-public:
+struct Sphere : public Object {
   Sphere(const Vec3f &, const float &);
 
   bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,

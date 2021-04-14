@@ -1,8 +1,7 @@
 #ifndef __VEC2F__
 #define __VEC2F__
 
-class Vec2f {
-public:
+struct Vec2f {
   Vec2f();
   Vec2f(float);
   Vec2f(float, float);

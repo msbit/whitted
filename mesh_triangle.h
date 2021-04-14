@@ -7,8 +7,7 @@
 #include "vec2f.h"
 #include "vec3f.h"
 
-class MeshTriangle : public Object {
-public:
+struct MeshTriangle : public Object {
   MeshTriangle(const std::vector<Vec3f> &, const std::vector<uint32_t> &,
                const uint32_t &, const std::vector<Vec2f> &);
 
