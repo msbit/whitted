@@ -26,12 +26,12 @@ bool solveQuadratic(float a, float b, float c, float &x0, float &x1) {
 Sphere::Sphere(const Vec3f center, float radius)
     : center(center), radius(radius), radius2(radius * radius) {}
 
-bool Sphere::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
-                       uint32_t &index, Vec2f &uv) const {
+bool Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
+                       float &tnear, uint32_t &, Vec2f &) const {
   // analytic solution
-  const Vec3f L = orig - center;
-  const float a = Vec3f::dotProduct(dir, dir);
-  const float b = 2 * Vec3f::dotProduct(dir, L);
+  const Vec3f L = origin - center;
+  const float a = Vec3f::dotProduct(direction, direction);
+  const float b = 2 * Vec3f::dotProduct(direction, L);
   const float c = Vec3f::dotProduct(L, L) - radius2;
   float t0;
   float t1;
@@ -51,8 +51,7 @@ bool Sphere::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
   return true;
 }
 
-void Sphere::getSurfaceProperties(const Vec3f &P, const Vec3f &I,
-                                  uint32_t index, const Vec2f &uv, Vec3f &N,
-                                  Vec2f &st) const {
+void Sphere::getSurfaceProperties(const Vec3f &P, const Vec3f &, uint32_t,
+                                  const Vec2f &, Vec3f &N, Vec2f &) const {
   N = Vec3f::normalize(P - center);
 }

@@ -35,11 +35,11 @@ bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
   return true;
 }
 
-MeshTriangle::MeshTriangle(const std::vector<Vec3f> verts,
-                           const std::vector<uint32_t> vertsIndex,
+MeshTriangle::MeshTriangle(const std::vector<Vec3f> vertices,
+                           const std::vector<uint32_t> vertexIndex,
                            uint32_t numTriangles, const std::vector<Vec2f> st)
-    : numTriangles(numTriangles), vertices(verts), stCoordinates(st),
-      vertexIndex(vertsIndex) {}
+    : numTriangles(numTriangles), vertices(vertices), stCoordinates(st),
+      vertexIndex(vertexIndex) {}
 
 bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
                              float &tnear, uint32_t &index, Vec2f &uv) const {
@@ -64,7 +64,7 @@ bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
   return intersect;
 }
 
-void MeshTriangle::getSurfaceProperties(const Vec3f &P, const Vec3f &I,
+void MeshTriangle::getSurfaceProperties(const Vec3f &, const Vec3f &,
                                         uint32_t index, const Vec2f &uv,
                                         Vec3f &N, Vec2f &st) const {
   const Vec3f &v0 = vertices[vertexIndex[index * 3]];
