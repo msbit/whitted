@@ -7,7 +7,7 @@ Vec3f::Vec3f() : x(0), y(0), z(0) {}
 Vec3f::Vec3f(float s) : x(s), y(s), z(s) {}
 Vec3f::Vec3f(float x, float y, float z) : x(x), y(y), z(z) {}
 
-Vec3f Vec3f::operator*(const float &s) const { return {x * s, y * s, z * s}; }
+Vec3f Vec3f::operator*(float s) const { return {x * s, y * s, z * s}; }
 Vec3f Vec3f::operator*(const Vec3f &other) const {
   return {x * other.x, y * other.y, z * other.z};
 }
@@ -31,7 +31,7 @@ float Vec3f::dotProduct(const Vec3f &a, const Vec3f &b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-Vec3f Vec3f::mix(const Vec3f &a, const Vec3f &b, const float &mixValue) {
+Vec3f Vec3f::mix(const Vec3f &a, const Vec3f &b, float mixValue) {
   return a * (1 - mixValue) + b * mixValue;
 }
 
@@ -45,9 +45,7 @@ Vec3f Vec3f::normalize(const Vec3f &v) {
   return v;
 }
 
-Vec3f operator*(const float &s, const Vec3f &v) {
-  return {v.x * s, v.y * s, v.z * s};
-}
+Vec3f operator*(float s, const Vec3f &v) { return {v.x * s, v.y * s, v.z * s}; }
 
 std::ostream &operator<<(std::ostream &os, const Vec3f &v) {
   return os << v.x << ", " << v.y << ", " << v.z;

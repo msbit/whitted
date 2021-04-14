@@ -46,11 +46,11 @@
 
 const float kInfinity = std::numeric_limits<float>::max();
 
-float clamp(const float &low, const float &high, const float &value) {
+float clamp(float low, float high, float value) {
   return std::max(low, std::min(high, value));
 }
 
-float deg2rad(const float &deg) { return deg * M_PI / 180; }
+float deg2rad(float deg) { return deg * M_PI / 180; }
 
 struct Options {
   uint32_t width;
@@ -82,7 +82,7 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
 // If the ray is inside, you need to invert the refractive indices and negate
 // the normal N
 // [/comment]
-Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) {
+Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
   float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etaI = 1;
   float etaT = ior;
@@ -109,7 +109,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) {
 //
 // \param[out] kr is the amount of light reflected
 // [/comment]
-void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) {
+void fresnel(const Vec3f &I, const Vec3f &N, float ior, float &kr) {
   float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etaI = 1;
   float etaT = ior;

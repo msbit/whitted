@@ -3,8 +3,7 @@
 
 #include "sphere.h"
 
-bool solveQuadratic(const float &a, const float &b, const float &c, float &x0,
-                    float &x1) {
+bool solveQuadratic(float a, float b, float c, float &x0, float &x1) {
   const float discr = b * b - 4 * a * c;
   if (discr < 0) {
     return false;
@@ -24,7 +23,7 @@ bool solveQuadratic(const float &a, const float &b, const float &c, float &x0,
   return true;
 }
 
-Sphere::Sphere(const Vec3f &center, const float &radius)
+Sphere::Sphere(const Vec3f &center, float radius)
     : center(center), radius(radius), radius2(radius * radius) {}
 
 bool Sphere::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
@@ -53,7 +52,7 @@ bool Sphere::intersect(const Vec3f &orig, const Vec3f &dir, float &tnear,
 }
 
 void Sphere::getSurfaceProperties(const Vec3f &P, const Vec3f &I,
-                                  const uint32_t &index, const Vec2f &uv,
-                                  Vec3f &N, Vec2f &st) const {
+                                  uint32_t index, const Vec2f &uv, Vec3f &N,
+                                  Vec2f &st) const {
   N = Vec3f::normalize(P - center);
 }
