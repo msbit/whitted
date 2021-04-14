@@ -203,96 +203,98 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     return options.backgroundColor;
   }
 
-  Vec3f hitColor = options.backgroundColor;
   float tNear = kInfinity;
   Vec2f uv;
   uint32_t index = 0;
   Object *hitObject = nullptr;
-  if (trace(origin, direction, objects, tNear, index, uv, &hitObject)) {
-    const Vec3f hitPoint = origin + direction * tNear;
-    Vec3f N;  // normal
-    Vec2f st; // st coordinates
-    hitObject->getSurfaceProperties(hitPoint, direction, index, uv, N, st);
-    const Vec3f tmp = hitPoint;
-    switch (hitObject->materialType) {
-    case REFLECTION_AND_REFRACTION: {
-      const Vec3f reflectionDirection = Vec3f::normalize(reflect(direction, N));
-      const Vec3f refractionDirection =
-          Vec3f::normalize(refract(direction, N, hitObject->ior));
-      const Vec3f reflectionRayOrigin =
-          (Vec3f::dotProduct(reflectionDirection, N) < 0)
-              ? hitPoint - N * options.bias
-              : hitPoint + N * options.bias;
-      const Vec3f refractionRayOrigin =
-          (Vec3f::dotProduct(refractionDirection, N) < 0)
-              ? hitPoint - N * options.bias
-              : hitPoint + N * options.bias;
-      const Vec3f reflectionColor =
-          castRay(reflectionRayOrigin, reflectionDirection, objects, lights,
-                  options, depth + 1);
-      const Vec3f refractionColor =
-          castRay(refractionRayOrigin, refractionDirection, objects, lights,
-                  options, depth + 1);
-      float kr;
-      fresnel(direction, N, hitObject->ior, kr);
-      hitColor = reflectionColor * kr + refractionColor * (1 - kr);
-      break;
+  if (!trace(origin, direction, objects, tNear, index, uv, &hitObject)) {
+    return options.backgroundColor;
+  }
+
+  Vec3f hitColor = options.backgroundColor;
+  const Vec3f hitPoint = origin + direction * tNear;
+  Vec3f N;  // normal
+  Vec2f st; // st coordinates
+  hitObject->getSurfaceProperties(hitPoint, direction, index, uv, N, st);
+  const Vec3f tmp = hitPoint;
+  switch (hitObject->materialType) {
+  case REFLECTION_AND_REFRACTION: {
+    const Vec3f reflectionDirection = Vec3f::normalize(reflect(direction, N));
+    const Vec3f refractionDirection =
+        Vec3f::normalize(refract(direction, N, hitObject->ior));
+    const Vec3f reflectionRayOrigin =
+        (Vec3f::dotProduct(reflectionDirection, N) < 0)
+            ? hitPoint - N * options.bias
+            : hitPoint + N * options.bias;
+    const Vec3f refractionRayOrigin =
+        (Vec3f::dotProduct(refractionDirection, N) < 0)
+            ? hitPoint - N * options.bias
+            : hitPoint + N * options.bias;
+    const Vec3f reflectionColor =
+        castRay(reflectionRayOrigin, reflectionDirection, objects, lights,
+                options, depth + 1);
+    const Vec3f refractionColor =
+        castRay(refractionRayOrigin, refractionDirection, objects, lights,
+                options, depth + 1);
+    float kr;
+    fresnel(direction, N, hitObject->ior, kr);
+    hitColor = reflectionColor * kr + refractionColor * (1 - kr);
+    break;
+  }
+  case REFLECTION: {
+    float kr;
+    fresnel(direction, N, hitObject->ior, kr);
+    const Vec3f reflectionDirection = reflect(direction, N);
+    const Vec3f reflectionRayOrigin =
+        (Vec3f::dotProduct(reflectionDirection, N) < 0)
+            ? hitPoint + N * options.bias
+            : hitPoint - N * options.bias;
+    hitColor = castRay(reflectionRayOrigin, reflectionDirection, objects,
+                       lights, options, depth + 1) *
+               kr;
+    break;
+  }
+  case DIFFUSE_AND_GLOSSY:
+  default: {
+    // [comment]
+    // We use the Phong illumation model int the default case. The phong model
+    // is composed of a diffuse and a specular reflection component.
+    // [/comment]
+    Vec3f lightAmt = 0;
+    Vec3f specularColor = 0;
+    const Vec3f shadowPointOrig = (Vec3f::dotProduct(direction, N) < 0)
+                                      ? hitPoint + N * options.bias
+                                      : hitPoint - N * options.bias;
+    // [comment]
+    // Loop over all lights in the scene and sum their contribution up
+    // We also apply the lambert cosine law here though we haven't explained
+    // yet what this means.
+    // [/comment]
+    for (const auto &light : lights) {
+      Vec3f lightDir = light.position - hitPoint;
+      // square of the distance between hitPoint and the light
+      const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
+      lightDir = Vec3f::normalize(lightDir);
+      const float LdotN = std::max(0.f, Vec3f::dotProduct(lightDir, N));
+      Object *shadowHitObject = nullptr;
+      float tNearShadow = kInfinity;
+      // is the point in shadow, and is the nearest occluding object closer to
+      // the object than the light itself?
+      const bool inShadow = trace(shadowPointOrig, lightDir, objects,
+                                  tNearShadow, index, uv, &shadowHitObject) &&
+                            tNearShadow * tNearShadow < lightDistance2;
+      lightAmt += (1 - inShadow) * light.intensity * LdotN;
+      const Vec3f reflectionDirection = reflect(-lightDir, N);
+      specularColor +=
+          powf(
+              std::max(0.f, -Vec3f::dotProduct(reflectionDirection, direction)),
+              hitObject->specularExponent) *
+          light.intensity;
     }
-    case REFLECTION: {
-      float kr;
-      fresnel(direction, N, hitObject->ior, kr);
-      const Vec3f reflectionDirection = reflect(direction, N);
-      const Vec3f reflectionRayOrigin =
-          (Vec3f::dotProduct(reflectionDirection, N) < 0)
-              ? hitPoint + N * options.bias
-              : hitPoint - N * options.bias;
-      hitColor = castRay(reflectionRayOrigin, reflectionDirection, objects,
-                         lights, options, depth + 1) *
-                 kr;
-      break;
-    }
-    case DIFFUSE_AND_GLOSSY:
-    default: {
-      // [comment]
-      // We use the Phong illumation model int the default case. The phong model
-      // is composed of a diffuse and a specular reflection component.
-      // [/comment]
-      Vec3f lightAmt = 0;
-      Vec3f specularColor = 0;
-      const Vec3f shadowPointOrig = (Vec3f::dotProduct(direction, N) < 0)
-                                        ? hitPoint + N * options.bias
-                                        : hitPoint - N * options.bias;
-      // [comment]
-      // Loop over all lights in the scene and sum their contribution up
-      // We also apply the lambert cosine law here though we haven't explained
-      // yet what this means.
-      // [/comment]
-      for (const auto &light : lights) {
-        Vec3f lightDir = light.position - hitPoint;
-        // square of the distance between hitPoint and the light
-        const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
-        lightDir = Vec3f::normalize(lightDir);
-        const float LdotN = std::max(0.f, Vec3f::dotProduct(lightDir, N));
-        Object *shadowHitObject = nullptr;
-        float tNearShadow = kInfinity;
-        // is the point in shadow, and is the nearest occluding object closer to
-        // the object than the light itself?
-        const bool inShadow = trace(shadowPointOrig, lightDir, objects,
-                                    tNearShadow, index, uv, &shadowHitObject) &&
-                              tNearShadow * tNearShadow < lightDistance2;
-        lightAmt += (1 - inShadow) * light.intensity * LdotN;
-        const Vec3f reflectionDirection = reflect(-lightDir, N);
-        specularColor +=
-            powf(std::max(0.f,
-                          -Vec3f::dotProduct(reflectionDirection, direction)),
-                 hitObject->specularExponent) *
-            light.intensity;
-      }
-      hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd +
-                 specularColor * hitObject->Ks;
-      break;
-    }
-    }
+    hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd +
+               specularColor * hitObject->Ks;
+    break;
+  }
   }
 
   return hitColor;
