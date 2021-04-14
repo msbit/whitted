@@ -197,8 +197,8 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
 // [/comment]
 Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
               const std::vector<std::unique_ptr<Object>> &objects,
-              const std::vector<std::unique_ptr<Light>> &lights,
-              const Options &options, uint32_t depth) {
+              const std::vector<Light> &lights, const Options &options,
+              uint32_t depth) {
   if (depth > options.maxDepth) {
     return options.backgroundColor;
   }
@@ -268,7 +268,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
       // yet what this means.
       // [/comment]
       for (const auto &light : lights) {
-        Vec3f lightDir = light->position - hitPoint;
+        Vec3f lightDir = light.position - hitPoint;
         // square of the distance between hitPoint and the light
         const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
         lightDir = Vec3f::normalize(lightDir);
@@ -280,13 +280,13 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
         const bool inShadow = trace(shadowPointOrig, lightDir, objects,
                                     tNearShadow, index, uv, &shadowHitObject) &&
                               tNearShadow * tNearShadow < lightDistance2;
-        lightAmt += (1 - inShadow) * light->intensity * LdotN;
+        lightAmt += (1 - inShadow) * light.intensity * LdotN;
         const Vec3f reflectionDirection = reflect(-lightDir, N);
         specularColor +=
             powf(std::max(0.f,
                           -Vec3f::dotProduct(reflectionDirection, direction)),
                  hitObject->specularExponent) *
-            light->intensity;
+            light.intensity;
       }
       hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd +
                  specularColor * hitObject->Ks;
@@ -305,7 +305,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
 // [/comment]
 void render(const Options &options,
             const std::vector<std::unique_ptr<Object>> &objects,
-            const std::vector<std::unique_ptr<Light>> &lights) {
+            const std::vector<Light> &lights) {
   Vec3f *framebuffer = new Vec3f[options.width * options.height];
   Vec3f *pix = framebuffer;
   const float scale = tan(deg2rad(options.fov * 0.5));
@@ -347,7 +347,7 @@ void render(const Options &options,
 int main(int argc, char **argv) {
   // creating the scene (adding objects and lights)
   std::vector<std::unique_ptr<Object>> objects;
-  std::vector<std::unique_ptr<Light>> lights;
+  std::vector<Light> lights;
 
   Sphere *sphere1 = new Sphere({-1, 0, -12}, 2);
   sphere1->materialType = DIFFUSE_AND_GLOSSY;
@@ -356,8 +356,8 @@ int main(int argc, char **argv) {
   sphere2->ior = 1.5;
   sphere2->materialType = REFLECTION_AND_REFRACTION;
 
-  objects.push_back(std::unique_ptr<Sphere>(sphere1));
-  objects.push_back(std::unique_ptr<Sphere>(sphere2));
+  objects.emplace_back(sphere1);
+  objects.emplace_back(sphere2);
 
   const std::vector<Vec3f> verts = {
       {-5, -3, -6}, {5, -3, -6}, {5, -3, -16}, {-5, -3, -16}};
@@ -366,10 +366,10 @@ int main(int argc, char **argv) {
   MeshTriangle *mesh = new MeshTriangle(verts, vertIndex, 2, st);
   mesh->materialType = DIFFUSE_AND_GLOSSY;
 
-  objects.push_back(std::unique_ptr<MeshTriangle>(mesh));
+  objects.emplace_back(mesh);
 
-  lights.push_back(std::unique_ptr<Light>(new Light({-20, 70, 20}, 0.5)));
-  lights.push_back(std::unique_ptr<Light>(new Light({30, 50, -12}, 1)));
+  lights.emplace_back(Vec3f{-20, 70, 20}, 0.5);
+  lights.emplace_back(Vec3f{30, 50, -12}, 1);
 
   // setting up options
   const Options options = {1600,   1600, 90, 5, {0.235294, 0.67451, 0.843137},
