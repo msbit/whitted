@@ -8,8 +8,8 @@ struct Vec3f {
   Vec3f(float);
   Vec3f(float, float, float);
 
-  Vec3f operator*(const float &)const;
-  Vec3f operator*(const Vec3f &)const;
+  Vec3f operator*(const float &) const;
+  Vec3f operator*(const Vec3f &) const;
   Vec3f operator-(const Vec3f &) const;
   Vec3f operator+(const Vec3f &) const;
   Vec3f operator-() const;
