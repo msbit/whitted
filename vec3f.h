@@ -1,8 +1,6 @@
 #ifndef __VEC3F__
 #define __VEC3F__
 
-#include <ostream>
-
 struct Vec3f {
   float x;
   float y;
@@ -20,7 +18,6 @@ struct Vec3f {
   Vec3f &operator+=(const Vec3f &);
 
   friend Vec3f operator*(float, const Vec3f &);
-  friend std::ostream &operator<<(std::ostream &, const Vec3f &);
 
   static Vec3f crossProduct(const Vec3f &, const Vec3f &);
   static float dotProduct(const Vec3f &, const Vec3f &);

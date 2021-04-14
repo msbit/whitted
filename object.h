@@ -1,6 +1,8 @@
 #ifndef __OBJECT__
 #define __OBJECT__
 
+#include <cstdint>
+
 #include "vec2f.h"
 #include "vec3f.h"
 

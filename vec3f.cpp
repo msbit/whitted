@@ -1,5 +1,4 @@
 #include <cmath>
-#include <ostream>
 
 #include "vec3f.h"
 
@@ -46,7 +45,3 @@ Vec3f Vec3f::normalize(const Vec3f &v) {
 }
 
 Vec3f operator*(float s, const Vec3f &v) { return {v.x * s, v.y * s, v.z * s}; }
-
-std::ostream &operator<<(std::ostream &os, const Vec3f &v) {
-  return os << v.x << ", " << v.y << ", " << v.z;
-}
