@@ -1,6 +1,5 @@
-#include <cstring>
-
 #include <cmath>
+#include <cstring>
 
 #include "mesh_triangle.h"
 
