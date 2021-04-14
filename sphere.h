@@ -10,7 +10,7 @@ struct Sphere : public Object {
   float radius;
   float radius2;
 
-  Sphere(const Vec3f &, float);
+  Sphere(const Vec3f, float);
 
   bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
                  Vec2f &) const;

@@ -13,8 +13,8 @@ struct MeshTriangle : public Object {
   std::vector<uint32_t> vertexIndex;
   std::vector<Vec2f> stCoordinates;
 
-  MeshTriangle(const std::vector<Vec3f> &, const std::vector<uint32_t> &,
-               uint32_t, const std::vector<Vec2f> &);
+  MeshTriangle(const std::vector<Vec3f>, const std::vector<uint32_t>, uint32_t,
+               const std::vector<Vec2f>);
 
   bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
                  Vec2f &) const;

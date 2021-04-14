@@ -36,9 +36,9 @@ bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
   return true;
 }
 
-MeshTriangle::MeshTriangle(const std::vector<Vec3f> &verts,
-                           const std::vector<uint32_t> &vertsIndex,
-                           uint32_t numTriangles, const std::vector<Vec2f> &st)
+MeshTriangle::MeshTriangle(const std::vector<Vec3f> verts,
+                           const std::vector<uint32_t> vertsIndex,
+                           uint32_t numTriangles, const std::vector<Vec2f> st)
     : numTriangles(numTriangles), vertices(verts), stCoordinates(st),
       vertexIndex(vertsIndex) {}
 
