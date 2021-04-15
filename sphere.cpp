@@ -54,7 +54,7 @@ bool Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
   return true;
 }
 
-void Sphere::getSurfaceProperties(const Vec3f &P, const Vec3f &, uint32_t,
-                                  const Vec2f &, Vec3f &N, Vec2f &) const {
-  N = Vec3f::normalize(P - center);
+SurfaceProperties Sphere::surfaceProperties(const Vec3f &P, const Vec3f &,
+                                            uint32_t, const Vec2f &) const {
+  return {Vec3f::normalize(P - center), Vec2f{0, 0}};
 }

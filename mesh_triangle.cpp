@@ -68,19 +68,22 @@ bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
   return intersect;
 }
 
-void MeshTriangle::getSurfaceProperties(const Vec3f &, const Vec3f &,
-                                        uint32_t index, const Vec2f &uv,
-                                        Vec3f &N, Vec2f &st) const {
-  const Vec3f &v0 = vertices[vertexIndex[index * 3]];
-  const Vec3f &v1 = vertices[vertexIndex[index * 3 + 1]];
-  const Vec3f &v2 = vertices[vertexIndex[index * 3 + 2]];
+SurfaceProperties MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
+                                                  uint32_t index,
+                                                  const Vec2f &uv) const {
+  const Vec3f v0 = vertices[vertexIndex[index * 3]];
+  const Vec3f v1 = vertices[vertexIndex[index * 3 + 1]];
+  const Vec3f v2 = vertices[vertexIndex[index * 3 + 2]];
   const Vec3f e0 = Vec3f::normalize(v1 - v0);
   const Vec3f e1 = Vec3f::normalize(v2 - v1);
-  N = Vec3f::normalize(Vec3f::crossProduct(e0, e1));
-  const Vec2f &st0 = stCoordinates[vertexIndex[index * 3]];
-  const Vec2f &st1 = stCoordinates[vertexIndex[index * 3 + 1]];
-  const Vec2f &st2 = stCoordinates[vertexIndex[index * 3 + 2]];
-  st = st0 * (1 - uv.x - uv.y) + st1 * uv.x + st2 * uv.y;
+  auto N = Vec3f::normalize(Vec3f::crossProduct(e0, e1));
+
+  const Vec2f st0 = stCoordinates[vertexIndex[index * 3]];
+  const Vec2f st1 = stCoordinates[vertexIndex[index * 3 + 1]];
+  const Vec2f st2 = stCoordinates[vertexIndex[index * 3 + 2]];
+  auto st = st0 * (1 - uv.x - uv.y) + st1 * uv.x + st2 * uv.y;
+
+  return {N, st};
 }
 
 Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &st) const {

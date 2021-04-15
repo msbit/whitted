@@ -118,40 +118,40 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
 
   Vec3f hitColor = options.backgroundColor;
   const Vec3f hitPoint = origin + direction * tNear;
-  Vec3f N;  // normal
-  Vec2f st; // st coordinates
-  hitObject->getSurfaceProperties(hitPoint, direction, index, uv, N, st);
+  SurfaceProperties properties =
+      hitObject->surfaceProperties(hitPoint, direction, index, uv);
   const Vec3f tmp = hitPoint;
   switch (hitObject->materialType) {
   case REFLECTION_AND_REFRACTION: {
-    const Vec3f reflectionDirection = Vec3f::normalize(reflect(direction, N));
+    const Vec3f reflectionDirection =
+        Vec3f::normalize(reflect(direction, properties.N));
     const Vec3f refractionDirection =
-        Vec3f::normalize(refract(direction, N, hitObject->ior));
+        Vec3f::normalize(refract(direction, properties.N, hitObject->ior));
     const Vec3f reflectionRayOrigin =
-        (Vec3f::dotProduct(reflectionDirection, N) < 0)
-            ? hitPoint - N * options.bias
-            : hitPoint + N * options.bias;
+        (Vec3f::dotProduct(reflectionDirection, properties.N) < 0)
+            ? hitPoint - properties.N * options.bias
+            : hitPoint + properties.N * options.bias;
     const Vec3f refractionRayOrigin =
-        (Vec3f::dotProduct(refractionDirection, N) < 0)
-            ? hitPoint - N * options.bias
-            : hitPoint + N * options.bias;
+        (Vec3f::dotProduct(refractionDirection, properties.N) < 0)
+            ? hitPoint - properties.N * options.bias
+            : hitPoint + properties.N * options.bias;
     const Vec3f reflectionColor =
         castRay(reflectionRayOrigin, reflectionDirection, objects, lights,
                 options, depth + 1);
     const Vec3f refractionColor =
         castRay(refractionRayOrigin, refractionDirection, objects, lights,
                 options, depth + 1);
-    float kr = fresnel(direction, N, hitObject->ior);
+    float kr = fresnel(direction, properties.N, hitObject->ior);
     hitColor = reflectionColor * kr + refractionColor * (1 - kr);
     break;
   }
   case REFLECTION: {
-    float kr = fresnel(direction, N, hitObject->ior);
-    const Vec3f reflectionDirection = reflect(direction, N);
+    float kr = fresnel(direction, properties.N, hitObject->ior);
+    const Vec3f reflectionDirection = reflect(direction, properties.N);
     const Vec3f reflectionRayOrigin =
-        (Vec3f::dotProduct(reflectionDirection, N) < 0)
-            ? hitPoint + N * options.bias
-            : hitPoint - N * options.bias;
+        (Vec3f::dotProduct(reflectionDirection, properties.N) < 0)
+            ? hitPoint + properties.N * options.bias
+            : hitPoint - properties.N * options.bias;
     hitColor = castRay(reflectionRayOrigin, reflectionDirection, objects,
                        lights, options, depth + 1) *
                kr;
@@ -165,9 +165,10 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     // [/comment]
     Vec3f lightAmt = 0;
     Vec3f specularColor = 0;
-    const Vec3f shadowPointOrig = (Vec3f::dotProduct(direction, N) < 0)
-                                      ? hitPoint + N * options.bias
-                                      : hitPoint - N * options.bias;
+    const Vec3f shadowPointOrig =
+        (Vec3f::dotProduct(direction, properties.N) < 0)
+            ? hitPoint + properties.N * options.bias
+            : hitPoint - properties.N * options.bias;
     // [comment]
     // Loop over all lights in the scene and sum their contribution up
     // We also apply the lambert cosine law here though we haven't explained
@@ -178,7 +179,8 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
       // square of the distance between hitPoint and the light
       const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
       lightDir = Vec3f::normalize(lightDir);
-      const float LdotN = std::max(0.f, Vec3f::dotProduct(lightDir, N));
+      const float LdotN =
+          std::max(0.f, Vec3f::dotProduct(lightDir, properties.N));
       Object *shadowHitObject = nullptr;
       float tNearShadow = kInfinity;
       // is the point in shadow, and is the nearest occluding object closer to
@@ -187,15 +189,16 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
                                   tNearShadow, index, uv, &shadowHitObject) &&
                             tNearShadow * tNearShadow < lightDistance2;
       lightAmt += (1 - inShadow) * light.intensity * LdotN;
-      const Vec3f reflectionDirection = reflect(-lightDir, N);
+      const Vec3f reflectionDirection = reflect(-lightDir, properties.N);
       specularColor +=
           powf(
               std::max(0.f, -Vec3f::dotProduct(reflectionDirection, direction)),
               hitObject->specularExponent) *
           light.intensity;
     }
-    hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd +
-               specularColor * hitObject->Ks;
+    hitColor =
+        lightAmt * hitObject->evalDiffuseColor(properties.st) * hitObject->Kd +
+        specularColor * hitObject->Ks;
     break;
   }
   }

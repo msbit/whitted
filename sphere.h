@@ -14,8 +14,8 @@ struct Sphere : public Object {
 
   bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
                  Vec2f &) const;
-  void getSurfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
-                            const Vec2f &, Vec3f &, Vec2f &) const;
+  SurfaceProperties surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
+                                      const Vec2f &) const;
 };
 
 #endif
