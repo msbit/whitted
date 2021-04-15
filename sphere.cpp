@@ -1,13 +1,17 @@
 #include <cmath>
+#include <optional>
 #include <utility>
 
 #include "sphere.h"
 
-bool solveQuadratic(float a, float b, float c, float &x0, float &x1) {
+std::optional<Vec2f> solveQuadratic(float a, float b, float c) {
   const float discr = b * b - 4 * a * c;
   if (discr < 0) {
-    return false;
+    return std::nullopt;
   }
+
+  float x0;
+  float x1;
 
   if (discr == 0) {
     x0 = x1 = -0.5 * b / a;
@@ -20,7 +24,7 @@ bool solveQuadratic(float a, float b, float c, float &x0, float &x1) {
   if (x0 > x1) {
     std::swap(x0, x1);
   }
-  return true;
+  return Vec2f{x0, x1};
 }
 
 Sphere::Sphere(const Vec3f center, float radius)
@@ -33,20 +37,19 @@ bool Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
   const float a = Vec3f::dotProduct(direction, direction);
   const float b = 2 * Vec3f::dotProduct(direction, L);
   const float c = Vec3f::dotProduct(L, L) - radius2;
-  float t0;
-  float t1;
-  if (!solveQuadratic(a, b, c, t0, t1)) {
+  std::optional<Vec2f> solution = solveQuadratic(a, b, c);
+  if (!solution.has_value()) {
     return false;
   }
 
-  if (t0 < 0) {
-    t0 = t1;
+  if (solution->x < 0) {
+    solution->x = solution->y;
   }
-  if (t0 < 0) {
+  if (solution->x < 0) {
     return false;
   }
 
-  tnear = t0;
+  tnear = solution->x;
 
   return true;
 }
