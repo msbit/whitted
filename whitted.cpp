@@ -84,13 +84,17 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
     float tNearK = kInfinity;
     uint32_t indexK;
     Vec2f uvK;
-    if (object->intersect(origin, direction, tNearK, indexK, uvK) &&
-        tNearK < tNear) {
-      *hitObject = object.get();
-      tNear = tNearK;
-      index = indexK;
-      uv = uvK;
+    if (!object->intersect(origin, direction, tNearK, indexK, uvK)) {
+      continue;
     }
+    if (tNearK >= tNear) {
+      continue;
+    }
+
+    *hitObject = object.get();
+    tNear = tNearK;
+    index = indexK;
+    uv = uvK;
   }
 
   return (*hitObject != nullptr);
@@ -202,36 +206,35 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
 void render(const Options &options,
             const std::vector<std::unique_ptr<Object>> &objects,
             const std::vector<Light> &lights) {
-  Vec3f *framebuffer = new Vec3f[options.width * options.height];
-  Vec3f *pix = framebuffer;
+  auto buffer = new Vec3f[options.width * options.height];
+  auto pixel = buffer;
   const float scale = tan(deg2rad(options.fov * 0.5));
   const float imageAspectRatio = options.width / (float)options.height;
   const Vec3f origin(0);
-  for (uint32_t j = 0; j < options.height; ++j) {
-    for (uint32_t i = 0; i < options.width; ++i) {
+  for (auto j = 0; j < options.height; ++j) {
+    for (auto i = 0; i < options.width; ++i) {
       // generate primary ray direction
       const float x =
           (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
       const float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
       const Vec3f direction = Vec3f::normalize({x, y, -1});
-      *(pix++) = castRay(origin, direction, objects, lights, options, 0);
+      *(pixel++) = castRay(origin, direction, objects, lights, options, 0);
     }
   }
 
-  // save framebuffer to file
+  // save buffer to file
   std::ofstream ofs;
   ofs.open("./out.ppm");
   ofs << "P6\n" << options.width << " " << options.height << "\n255\n";
-  for (uint32_t i = 0; i < options.height * options.width; ++i) {
-    const char r = (char)(255 * clamp(0, 1, framebuffer[i].x));
-    const char g = (char)(255 * clamp(0, 1, framebuffer[i].y));
-    const char b = (char)(255 * clamp(0, 1, framebuffer[i].z));
-    ofs << r << g << b;
+  for (auto i = 0; i < options.height * options.width; ++i) {
+    ofs << (char)(255 * clamp(0, 1, buffer[i].x));
+    ofs << (char)(255 * clamp(0, 1, buffer[i].y));
+    ofs << (char)(255 * clamp(0, 1, buffer[i].z));
   }
 
   ofs.close();
 
-  delete[] framebuffer;
+  delete[] buffer;
 }
 
 int main(int argc, char **argv) {
@@ -239,10 +242,10 @@ int main(int argc, char **argv) {
   std::vector<std::unique_ptr<Object>> objects;
   std::vector<Light> lights;
 
-  Sphere *sphere1 = new Sphere({-1, 0, -12}, 2);
+  auto sphere1 = new Sphere({-1, 0, -12}, 2);
   sphere1->materialType = DIFFUSE_AND_GLOSSY;
   sphere1->diffuseColor = {0.6, 0.7, 0.8};
-  Sphere *sphere2 = new Sphere({0.5, -0.5, -8}, 1.5);
+  auto sphere2 = new Sphere({0.5, -0.5, -8}, 1.5);
   sphere2->ior = 1.5;
   sphere2->materialType = REFLECTION_AND_REFRACTION;
 
@@ -253,7 +256,7 @@ int main(int argc, char **argv) {
       {-5, -3, -6}, {5, -3, -6}, {5, -3, -16}, {-5, -3, -16}};
   const std::vector<uint32_t> vertIndex = {0, 1, 3, 1, 2, 3};
   const std::vector<Vec2f> st = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-  MeshTriangle *mesh = new MeshTriangle(verts, vertIndex, 2, st);
+  auto mesh = new MeshTriangle(verts, vertIndex, 2, st);
   mesh->materialType = DIFFUSE_AND_GLOSSY;
 
   objects.emplace_back(mesh);
