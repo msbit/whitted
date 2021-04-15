@@ -1,38 +1,39 @@
 #include <cmath>
 #include <cstring>
+#include <optional>
 
 #include "mesh_triangle.h"
 
-bool rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-                          const Vec3f &origin, const Vec3f &direction,
-                          float &tnear, float &u, float &v) {
+std::optional<Vec3f> rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1,
+                                          const Vec3f &v2, const Vec3f &origin,
+                                          const Vec3f &direction) {
   const Vec3f edge1 = v1 - v0;
   const Vec3f edge2 = v2 - v0;
   const Vec3f pvec = Vec3f::crossProduct(direction, edge2);
   const float det = Vec3f::dotProduct(edge1, pvec);
   if (det == 0 || det < 0) {
-    return false;
+    return std::nullopt;
   }
 
   const Vec3f tvec = origin - v0;
-  u = Vec3f::dotProduct(tvec, pvec);
+  float u = Vec3f::dotProduct(tvec, pvec);
   if (u < 0 || u > det) {
-    return false;
+    return std::nullopt;
   }
 
   const Vec3f qvec = Vec3f::crossProduct(tvec, edge1);
-  v = Vec3f::dotProduct(direction, qvec);
+  float v = Vec3f::dotProduct(direction, qvec);
   if (v < 0 || u + v > det) {
-    return false;
+    return std::nullopt;
   }
 
   const float invDet = 1 / det;
 
-  tnear = Vec3f::dotProduct(edge2, qvec) * invDet;
+  float tnear = Vec3f::dotProduct(edge2, qvec) * invDet;
   u *= invDet;
   v *= invDet;
 
-  return true;
+  return Vec3f{tnear, u, v};
 }
 
 MeshTriangle::MeshTriangle(const std::vector<Vec3f> vertices,
@@ -48,17 +49,20 @@ bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
     const Vec3f &v0 = vertices[vertexIndex[k * 3]];
     const Vec3f &v1 = vertices[vertexIndex[k * 3 + 1]];
     const Vec3f &v2 = vertices[vertexIndex[k * 3 + 2]];
-    float t;
-    float u;
-    float v;
-    if (rayTriangleIntersect(v0, v1, v2, origin, direction, t, u, v) &&
-        t < tnear) {
-      tnear = t;
-      uv.x = u;
-      uv.y = v;
-      index = k;
-      intersect |= true;
+    std::optional<Vec3f> intersection =
+        rayTriangleIntersect(v0, v1, v2, origin, direction);
+    if (!intersection.has_value()) {
+      continue;
     }
+    if (intersection->x >= tnear) {
+      continue;
+    }
+
+    tnear = intersection->x;
+    uv.x = intersection->y;
+    uv.y = intersection->z;
+    index = k;
+    intersect |= true;
   }
 
   return intersect;
