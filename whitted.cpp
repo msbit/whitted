@@ -51,7 +51,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
   return k < 0 ? 0 : eta * I + (eta * cosI - sqrtf(k)) * n;
 }
 
-void fresnel(const Vec3f &I, const Vec3f &N, float ior, float &kr) {
+float fresnel(const Vec3f &I, const Vec3f &N, float ior) {
   float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etaI = 1;
   float etaT = ior;
@@ -62,16 +62,16 @@ void fresnel(const Vec3f &I, const Vec3f &N, float ior, float &kr) {
   const float sinT = etaI / etaT * sqrtf(std::max(0.f, 1 - cosI * cosI));
   // Total internal reflection
   if (sinT >= 1) {
-    kr = 1;
-  } else {
-    const float cosT = sqrtf(std::max(0.f, 1 - sinT * sinT));
-    cosI = fabsf(cosI);
-    const float Rs =
-        ((etaT * cosI) - (etaI * cosT)) / ((etaT * cosI) + (etaI * cosT));
-    const float Rp =
-        ((etaI * cosI) - (etaT * cosT)) / ((etaI * cosI) + (etaT * cosT));
-    kr = (Rs * Rs + Rp * Rp) / 2;
+    return 1;
   }
+
+  const float cosT = sqrtf(std::max(0.f, 1 - sinT * sinT));
+  cosI = fabsf(cosI);
+  const float Rs =
+      ((etaT * cosI) - (etaI * cosT)) / ((etaT * cosI) + (etaI * cosT));
+  const float Rp =
+      ((etaI * cosI) - (etaT * cosT)) / ((etaI * cosI) + (etaT * cosT));
+  return (Rs * Rs + Rp * Rp) / 2;
   // As a consequence of the conservation of energy, transmittance is given by:
   // kt = 1 - kr;
 }
@@ -137,14 +137,12 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     const Vec3f refractionColor =
         castRay(refractionRayOrigin, refractionDirection, objects, lights,
                 options, depth + 1);
-    float kr;
-    fresnel(direction, N, hitObject->ior, kr);
+    float kr = fresnel(direction, N, hitObject->ior);
     hitColor = reflectionColor * kr + refractionColor * (1 - kr);
     break;
   }
   case REFLECTION: {
-    float kr;
-    fresnel(direction, N, hitObject->ior, kr);
+    float kr = fresnel(direction, N, hitObject->ior);
     const Vec3f reflectionDirection = reflect(direction, N);
     const Vec3f reflectionRayOrigin =
         (Vec3f::dotProduct(reflectionDirection, N) < 0)
