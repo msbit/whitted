@@ -1,33 +1,3 @@
-//[header]
-// A simple program to demonstrate how to implement Whitted-style ray-tracing
-//[/header]
-//[compile]
-// Download the whitted.cpp file to a folder.
-// Open a shell/terminal, and run the following command where the files is
-// saved:
-//
-// c++ -o whitted whitted.cpp -std=c++11 -O3
-//
-// Run with: ./whitted. Open the file ./out.png in Photoshop or any program
-// reading PPM files.
-//[/compile]
-//[ignore]
-// Copyright (C) 2012  www.scratchapixel.com
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//[/ignore]
-
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -61,27 +31,10 @@ struct Options {
   float bias;
 };
 
-// [comment]
-// Compute reflection direction
-// [/comment]
 Vec3f reflect(const Vec3f &I, const Vec3f &N) {
   return I - 2 * Vec3f::dotProduct(I, N) * N;
 }
 
-// [comment]
-// Compute refraction direction using Snell's law
-//
-// We need to handle with care the two possible situations:
-//
-//    - When the ray is inside the object
-//
-//    - When the ray is outside.
-//
-// If the ray is outside, you need to make cosi positive cosi = -N.I
-//
-// If the ray is inside, you need to invert the refractive indices and negate
-// the normal N
-// [/comment]
 Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
   float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etaI = 1;
@@ -98,17 +51,6 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
   return k < 0 ? 0 : eta * I + (eta * cosI - sqrtf(k)) * n;
 }
 
-// [comment]
-// Compute Fresnel equation
-//
-// \param I is the incident view direction
-//
-// \param N is the normal at the intersection point
-//
-// \param ior is the mateural refractive index
-//
-// \param[out] kr is the amount of light reflected
-// [/comment]
 void fresnel(const Vec3f &I, const Vec3f &N, float ior, float &kr) {
   float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   float etaI = 1;
@@ -134,29 +76,6 @@ void fresnel(const Vec3f &I, const Vec3f &N, float ior, float &kr) {
   // kt = 1 - kr;
 }
 
-// [comment]
-// Returns true if the ray intersects an object, false otherwise.
-//
-// \param origin is the ray origin
-//
-// \param direction is the ray direction
-//
-// \param objects is the list of objects the scene contains
-//
-// \param[out] tNear contains the distance to the cloesest intersected object.
-//
-// \param[out] index stores the index of the intersect triangle if the
-// interesected object is a mesh.
-//
-// \param[out] uv stores the u and v barycentric coordinates of the intersected
-// point
-//
-// \param[out] *hitObject stores the pointer to the intersected object (used to
-// retrieve material information, etc.)
-//
-// \param isShadowRay is it a shadow ray. We can return from the function sooner
-// as soon as we have found a hit.
-// [/comment]
 bool trace(const Vec3f &origin, const Vec3f &direction,
            const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
            uint32_t &index, Vec2f &uv, Object **hitObject) {
@@ -177,24 +96,6 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
   return (*hitObject != nullptr);
 }
 
-// [comment]
-// Implementation of the Whitted-syle light transport algorithm (E [S*] (D|G) L)
-//
-// This function is the function that compute the color at the intersection
-// point of a ray defined by a position and a direction. Note that thus function
-// is recursive (it calls itself).
-//
-// If the material of the intersected object is either reflective or reflective
-// and refractive, then we compute the reflection/refracton direction and cast
-// two new rays into the scene by calling the castRay() function recursively.
-// When the surface is transparent, we mix the reflection and refraction color
-// using the result of the fresnel equations (it computes the amount of
-// reflection and refractin depending on the surface normal, incident view
-// direction and surface refractive index).
-//
-// If the surface is duffuse/glossy we use the Phong illumation model to compute
-// the color at the intersection point.
-// [/comment]
 Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
               const std::vector<std::unique_ptr<Object>> &objects,
               const std::vector<Light> &lights, const Options &options,
@@ -300,11 +201,6 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
   return hitColor;
 }
 
-// [comment]
-// The main render function. This where we iterate over all pixels in the image,
-// generate primary rays and cast these rays into the scene. The content of the
-// framebuffer is saved to a file.
-// [/comment]
 void render(const Options &options,
             const std::vector<std::unique_ptr<Object>> &objects,
             const std::vector<Light> &lights) {
@@ -340,12 +236,6 @@ void render(const Options &options,
   delete[] framebuffer;
 }
 
-// [comment]
-// In the main function of the program, we create the scene (create objects and
-// lights) as well as set the options for the render (image widht and height,
-// maximum recursion depth, field-of-view, etc.). We then call the render
-// function().
-// [/comment]
 int main(int argc, char **argv) {
   // creating the scene (adding objects and lights)
   std::vector<std::unique_ptr<Object>> objects;
