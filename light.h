@@ -1,13 +1,13 @@
 #ifndef __LIGHT__
 #define __LIGHT__
 
-#include "vec3f.h"
+#include "vec3.h"
 
 struct Light {
-  Vec3f intensity;
-  Vec3f position;
+  Vec3<float> intensity;
+  Vec3<float> position;
 
-  Light(const Vec3f, const Vec3f);
+  Light(const Vec3<float>, const Vec3<float>);
 };
 
 #endif

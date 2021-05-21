@@ -4,23 +4,23 @@
 #include <vector>
 
 #include "object.h"
-#include "vec2f.h"
-#include "vec3f.h"
+#include "vec2.h"
+#include "vec3.h"
 
 struct MeshTriangle : public Object {
   uint32_t numTriangles;
-  std::vector<Vec2f> stCoordinates;
+  std::vector<Vec2<float>> stCoordinates;
   std::vector<uint32_t> vertexIndex;
-  std::vector<Vec3f> vertices;
+  std::vector<Vec3<float>> vertices;
 
-  MeshTriangle(const std::vector<Vec3f>, const std::vector<uint32_t>, uint32_t,
-               const std::vector<Vec2f>);
+  MeshTriangle(const std::vector<Vec3<float>>, const std::vector<uint32_t>,
+               uint32_t, const std::vector<Vec2<float>>);
 
-  auto intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
-                 Vec2f &) const -> bool;
-  auto surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
-                         const Vec2f &) const -> SurfaceProperties;
-  auto evalDiffuseColor(const Vec2f &) const -> Vec3f;
+  auto intersect(const Vec3<float> &, const Vec3<float> &, float &, uint32_t &,
+                 Vec2<float> &) const -> bool;
+  auto surfaceProperties(const Vec3<float> &, const Vec3<float> &, uint32_t,
+                         const Vec2<float> &) const -> SurfaceProperties;
+  auto evalDiffuseColor(const Vec2<float> &) const -> Vec3<float>;
 };
 
 #endif
