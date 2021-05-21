@@ -8,10 +8,10 @@
 #include "vec3f.h"
 
 struct MeshTriangle : public Object {
-  std::vector<Vec3f> vertices;
   uint32_t numTriangles;
-  std::vector<uint32_t> vertexIndex;
   std::vector<Vec2f> stCoordinates;
+  std::vector<uint32_t> vertexIndex;
+  std::vector<Vec3f> vertices;
 
   MeshTriangle(const std::vector<Vec3f>, const std::vector<uint32_t>, uint32_t,
                const std::vector<Vec2f>);

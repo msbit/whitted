@@ -27,8 +27,7 @@ std::optional<Vec2f> solveQuadratic(float a, float b, float c) {
   return Vec2f{x0, x1};
 }
 
-Sphere::Sphere(const Vec3f center, float radius)
-    : center(center), radius(radius), radius2(radius * radius) {}
+Sphere::Sphere(const Vec3f c, float r) : center(c), radius(r), radius2(r * r) {}
 
 bool Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
                        float &tnear, uint32_t &, Vec2f &) const {
