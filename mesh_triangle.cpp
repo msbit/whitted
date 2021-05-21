@@ -45,28 +45,38 @@ MeshTriangle::MeshTriangle(const std::vector<Vec3<float>> vertices,
 auto MeshTriangle::intersect(const Vec3<float> &origin,
                              const Vec3<float> &direction, float &tnear,
                              uint32_t &index, Vec2<float> &uv) const -> bool {
-  auto intersect = false;
-  for (auto i = 0; i < vertexIndex.size(); i++) {
-    const auto v = vertexIndex[i];
-    const auto &v0 = vertices[v.x];
-    const auto &v1 = vertices[v.y];
-    const auto &v2 = vertices[v.z];
-    auto intersection = rayTriangleIntersect(v0, v1, v2, origin, direction);
-    if (!intersection.has_value()) {
-      continue;
-    }
-    if (intersection->x >= tnear) {
-      continue;
-    }
+  auto hits = std::vector<std::optional<Vec3<float>>>();
+  std::transform(vertexIndex.begin(), vertexIndex.end(),
+                 std::back_inserter(hits), [this, direction, origin](auto &v) {
+                   const auto &v0 = vertices[v.x];
+                   const auto &v1 = vertices[v.y];
+                   const auto &v2 = vertices[v.z];
+                   return rayTriangleIntersect(v0, v1, v2, origin, direction);
+                 });
 
-    tnear = intersection->x;
-    uv.x = intersection->y;
-    uv.y = intersection->z;
-    index = i;
-    intersect |= true;
+  if (!std::any_of(hits.begin(), hits.end(),
+                   [](auto i) { return i.has_value(); })) {
+    return false;
   }
 
-  return intersect;
+  auto it = std::min_element(hits.begin(), hits.end(),
+                             [](const auto &a, const auto &b) {
+                               if (!b.has_value()) {
+                                 return a.has_value();
+                               }
+                               if (!a.has_value() && b.has_value()) {
+                                 return false;
+                               }
+                               return a->x < b->x;
+                             });
+
+  auto found = *it;
+  tnear = found->x;
+  uv.x = found->y;
+  uv.y = found->z;
+  index = it - hits.begin();
+
+  return true;
 }
 
 auto MeshTriangle::surfaceProperties(const Vec3<float> &, const Vec3<float> &,
