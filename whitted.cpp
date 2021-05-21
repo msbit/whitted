@@ -65,11 +65,11 @@ float fresnel(const Vec3f &I, const Vec3f &N, float ior) {
     return 1;
   }
 
-  const float cosT = std::sqrtf(std::max(0.f, 1 - sinT * sinT));
+  const auto cosT = std::sqrtf(std::max(0.f, 1 - sinT * sinT));
   cosI = std::fabsf(cosI);
-  const float Rs =
+  const auto Rs =
       ((etaT * cosI) - (etaI * cosT)) / ((etaT * cosI) + (etaI * cosT));
-  const float Rp =
+  const auto Rp =
       ((etaI * cosI) - (etaT * cosT)) / ((etaI * cosI) + (etaT * cosT));
   return (Rs * Rs + Rp * Rp) / 2;
   // As a consequence of the conservation of energy, transmittance is given by:
@@ -81,7 +81,7 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
            uint32_t &index, Vec2f &uv, Object **hitObject) {
   *hitObject = nullptr;
   for (const auto &object : objects) {
-    float tNearK = kInfinity;
+    auto tNearK = kInfinity;
     uint32_t indexK;
     Vec2f uvK;
     if (!object->intersect(origin, direction, tNearK, indexK, uvK)) {
@@ -108,7 +108,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     return options.backgroundColor;
   }
 
-  float tNear = kInfinity;
+  auto tNear = kInfinity;
   Vec2f uv;
   uint32_t index = 0;
   Object *hitObject = nullptr;
@@ -116,38 +116,38 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     return options.backgroundColor;
   }
 
-  Vec3f hitColor = options.backgroundColor;
-  const Vec3f hitPoint = origin + direction * tNear;
-  SurfaceProperties properties =
+  auto hitColor = options.backgroundColor;
+  const auto hitPoint = origin + direction * tNear;
+  auto properties =
       hitObject->surfaceProperties(hitPoint, direction, index, uv);
   switch (hitObject->materialType) {
   case REFLECTION_AND_REFRACTION: {
-    const Vec3f reflectionDirection =
+    const auto reflectionDirection =
         Vec3f::normalize(reflect(direction, properties.N));
-    const Vec3f refractionDirection =
+    const auto refractionDirection =
         Vec3f::normalize(refract(direction, properties.N, hitObject->ior));
-    const Vec3f reflectionRayOrigin =
+    const auto reflectionRayOrigin =
         (Vec3f::dotProduct(reflectionDirection, properties.N) < 0)
             ? hitPoint - properties.N * options.bias
             : hitPoint + properties.N * options.bias;
-    const Vec3f refractionRayOrigin =
+    const auto refractionRayOrigin =
         (Vec3f::dotProduct(refractionDirection, properties.N) < 0)
             ? hitPoint - properties.N * options.bias
             : hitPoint + properties.N * options.bias;
-    const Vec3f reflectionColor =
+    const auto reflectionColor =
         castRay(reflectionRayOrigin, reflectionDirection, objects, lights,
                 options, depth + 1);
-    const Vec3f refractionColor =
+    const auto refractionColor =
         castRay(refractionRayOrigin, refractionDirection, objects, lights,
                 options, depth + 1);
-    float kr = fresnel(direction, properties.N, hitObject->ior);
+    auto kr = fresnel(direction, properties.N, hitObject->ior);
     hitColor = reflectionColor * kr + refractionColor * (1 - kr);
     break;
   }
   case REFLECTION: {
-    float kr = fresnel(direction, properties.N, hitObject->ior);
-    const Vec3f reflectionDirection = reflect(direction, properties.N);
-    const Vec3f reflectionRayOrigin =
+    auto kr = fresnel(direction, properties.N, hitObject->ior);
+    const auto reflectionDirection = reflect(direction, properties.N);
+    const auto reflectionRayOrigin =
         (Vec3f::dotProduct(reflectionDirection, properties.N) < 0)
             ? hitPoint + properties.N * options.bias
             : hitPoint - properties.N * options.bias;
@@ -164,7 +164,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     // [/comment]
     Vec3f lightAmt = 0;
     Vec3f specularColor = 0;
-    const Vec3f shadowPointOrig =
+    const auto shadowPointOrig =
         (Vec3f::dotProduct(direction, properties.N) < 0)
             ? hitPoint + properties.N * options.bias
             : hitPoint - properties.N * options.bias;
@@ -174,21 +174,21 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
     // yet what this means.
     // [/comment]
     for (const auto &light : lights) {
-      Vec3f lightDir = light.position - hitPoint;
+      auto lightDir = light.position - hitPoint;
       // square of the distance between hitPoint and the light
-      const float lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
+      const auto lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
       lightDir = Vec3f::normalize(lightDir);
-      const float LdotN =
+      const auto LdotN =
           std::max(0.f, Vec3f::dotProduct(lightDir, properties.N));
       Object *shadowHitObject = nullptr;
-      float tNearShadow = kInfinity;
+      auto tNearShadow = kInfinity;
       // is the point in shadow, and is the nearest occluding object closer to
       // the object than the light itself?
-      const bool inShadow = trace(shadowPointOrig, lightDir, objects,
+      const auto inShadow = trace(shadowPointOrig, lightDir, objects,
                                   tNearShadow, index, uv, &shadowHitObject) &&
                             tNearShadow * tNearShadow < lightDistance2;
       lightAmt += (1 - inShadow) * light.intensity * LdotN;
-      const Vec3f reflectionDirection = reflect(-lightDir, properties.N);
+      const auto reflectionDirection = reflect(-lightDir, properties.N);
       specularColor +=
           powf(
               std::max(0.f, -Vec3f::dotProduct(reflectionDirection, direction)),
@@ -210,8 +210,8 @@ void render(const Options &options,
             const std::vector<Light> &lights) {
   auto buffer = new Vec3f[options.width * options.height];
   auto pixel = buffer;
-  const float scale = std::tan(deg2rad(options.fov * 0.5));
-  const float imageAspectRatio = options.width / (float)options.height;
+  const auto scale = std::tan(deg2rad(options.fov * 0.5));
+  const auto imageAspectRatio = options.width / (float)options.height;
   const Vec3f origin(0);
   for (auto j = 0; j < options.height; ++j) {
     for (auto i = 0; i < options.width; ++i) {
@@ -219,7 +219,7 @@ void render(const Options &options,
       const float x =
           (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
       const float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-      const Vec3f direction = Vec3f::normalize({x, y, -1});
+      const auto direction = Vec3f::normalize({x, y, -1});
       *(pixel++) = castRay(origin, direction, objects, lights, options, 0);
     }
   }

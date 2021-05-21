@@ -35,12 +35,12 @@ Vec3f Vec3f::mix(const Vec3f &a, const Vec3f &b, float mixValue) {
 }
 
 Vec3f Vec3f::normalize(const Vec3f &v) {
-  const float mag2 = v.x * v.x + v.y * v.y + v.z * v.z;
+  const auto mag2 = v.x * v.x + v.y * v.y + v.z * v.z;
   if (mag2 == 0) {
     return v;
   }
 
-  const float invMag = 1 / std::sqrtf(mag2);
+  const auto invMag = 1 / std::sqrtf(mag2);
   return {v.x * invMag, v.y * invMag, v.z * invMag};
 }
 
