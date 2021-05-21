@@ -16,10 +16,6 @@
 
 const float kInfinity = std::numeric_limits<float>::max();
 
-auto clamp(float low, float high, float value) -> float {
-  return std::max(low, std::min(high, value));
-}
-
 auto deg2rad(float deg) -> float { return deg * M_PI / 180; }
 
 struct Options {
@@ -36,7 +32,7 @@ auto reflect(const Vec3f &I, const Vec3f &N) -> Vec3f {
 }
 
 auto refract(const Vec3f &I, const Vec3f &N, float ior) -> Vec3f {
-  auto cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
+  auto cosI = std::clamp(Vec3f::dotProduct(I, N), -1.f, 1.f);
   auto etaI = 1.f;
   auto etaT = ior;
   auto n = N;
@@ -52,7 +48,7 @@ auto refract(const Vec3f &I, const Vec3f &N, float ior) -> Vec3f {
 }
 
 auto fresnel(const Vec3f &I, const Vec3f &N, float ior) -> float {
-  auto cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
+  auto cosI = std::clamp(Vec3f::dotProduct(I, N), -1.f, 1.f);
   auto etaI = 1.f;
   auto etaT = ior;
   if (cosI > 0) {
@@ -229,9 +225,9 @@ auto render(const Options &options,
   ofs.open("./out.ppm");
   ofs << "P6\n" << options.width << " " << options.height << "\n255\n";
   for (auto i = 0; i < options.height * options.width; ++i) {
-    ofs << (char)(255 * clamp(0, 1, buffer[i].x));
-    ofs << (char)(255 * clamp(0, 1, buffer[i].y));
-    ofs << (char)(255 * clamp(0, 1, buffer[i].z));
+    ofs << (char)(255 * std::clamp(buffer[i].x, 0.f, 1.f));
+    ofs << (char)(255 * std::clamp(buffer[i].y, 0.f, 1.f));
+    ofs << (char)(255 * std::clamp(buffer[i].z, 0.f, 1.f));
   }
 
   ofs.close();
