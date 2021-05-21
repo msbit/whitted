@@ -36,37 +36,37 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
 }
 
 Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
-  float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
-  float etaI = 1;
-  float etaT = ior;
-  Vec3f n = N;
+  auto cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
+  auto etaI = 1.f;
+  auto etaT = ior;
+  auto n = N;
   if (cosI < 0) {
     cosI = -cosI;
   } else {
     std::swap(etaI, etaT);
     n = -N;
   }
-  const float eta = etaI / etaT;
-  const float k = 1 - eta * eta * (1 - cosI * cosI);
-  return k < 0 ? 0 : eta * I + (eta * cosI - sqrtf(k)) * n;
+  const auto eta = etaI / etaT;
+  const auto k = 1 - eta * eta * (1 - cosI * cosI);
+  return k < 0 ? 0 : eta * I + (eta * cosI - std::sqrtf(k)) * n;
 }
 
 float fresnel(const Vec3f &I, const Vec3f &N, float ior) {
-  float cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
-  float etaI = 1;
-  float etaT = ior;
+  auto cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
+  auto etaI = 1.f;
+  auto etaT = ior;
   if (cosI > 0) {
     std::swap(etaI, etaT);
   }
   // Compute sini using Snell's law
-  const float sinT = etaI / etaT * sqrtf(std::max(0.f, 1 - cosI * cosI));
+  const auto sinT = etaI / etaT * std::sqrtf(std::max(0.f, 1 - cosI * cosI));
   // Total internal reflection
   if (sinT >= 1) {
     return 1;
   }
 
-  const float cosT = sqrtf(std::max(0.f, 1 - sinT * sinT));
-  cosI = fabsf(cosI);
+  const float cosT = std::sqrtf(std::max(0.f, 1 - sinT * sinT));
+  cosI = std::fabsf(cosI);
   const float Rs =
       ((etaT * cosI) - (etaI * cosT)) / ((etaT * cosI) + (etaI * cosT));
   const float Rp =
@@ -210,7 +210,7 @@ void render(const Options &options,
             const std::vector<Light> &lights) {
   auto buffer = new Vec3f[options.width * options.height];
   auto pixel = buffer;
-  const float scale = tan(deg2rad(options.fov * 0.5));
+  const float scale = std::tan(deg2rad(options.fov * 0.5));
   const float imageAspectRatio = options.width / (float)options.height;
   const Vec3f origin(0);
   for (auto j = 0; j < options.height; ++j) {

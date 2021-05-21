@@ -40,7 +40,7 @@ Vec3f Vec3f::normalize(const Vec3f &v) {
     return v;
   }
 
-  const float invMag = 1 / sqrtf(mag2);
+  const float invMag = 1 / std::sqrtf(mag2);
   return {v.x * invMag, v.y * invMag, v.z * invMag};
 }
 

@@ -17,7 +17,7 @@ std::optional<Vec2f> solveQuadratic(float a, float b, float c) {
     x0 = x1 = -0.5 * b / a;
   } else {
     const float q =
-        (b > 0) ? -0.5 * (b + sqrt(discr)) : -0.5 * (b - sqrt(discr));
+        (b > 0) ? -0.5 * (b + std::sqrt(discr)) : -0.5 * (b - std::sqrt(discr));
     x0 = q / a;
     x1 = c / q;
   }

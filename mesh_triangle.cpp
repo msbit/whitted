@@ -89,6 +89,6 @@ SurfaceProperties MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
 Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &st) const {
   const float scale = 5;
   const float pattern =
-      (fmodf(st.x * scale, 1) > 0.5) ^ (fmodf(st.y * scale, 1) > 0.5);
+      (std::fmodf(st.x * scale, 1) > 0.5) ^ (std::fmodf(st.y * scale, 1) > 0.5);
   return Vec3f::mix({0.815, 0.235, 0.031}, {0.937, 0.937, 0.231}, pattern);
 }
