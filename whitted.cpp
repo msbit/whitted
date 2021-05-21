@@ -250,11 +250,11 @@ auto main(int argc, char **argv) -> int {
   objects.emplace_back(sphere1);
   objects.emplace_back(sphere2);
 
-  const std::vector<Vec3<float>> verts = {
+  const std::vector<Vec3<float>> vertices = {
       {-5, -3, -6}, {5, -3, -6}, {5, -3, -16}, {-5, -3, -16}};
-  const std::vector<uint32_t> vertIndex = {0, 1, 3, 1, 2, 3};
+  const std::vector<Vec3<uint32_t>> vertIndex = {{0, 1, 3}, {1, 2, 3}};
   const std::vector<Vec2<float>> st = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-  auto mesh = new MeshTriangle(verts, vertIndex, 2, st);
+  auto mesh = new MeshTriangle(vertices, vertIndex, st);
   mesh->materialType = DIFFUSE_AND_GLOSSY;
 
   objects.emplace_back(mesh);

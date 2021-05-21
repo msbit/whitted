@@ -8,13 +8,13 @@
 #include "vec3.h"
 
 struct MeshTriangle : public Object {
-  uint32_t numTriangles;
   std::vector<Vec2<float>> stCoordinates;
-  std::vector<uint32_t> vertexIndex;
+  std::vector<Vec3<uint32_t>> vertexIndex;
   std::vector<Vec3<float>> vertices;
 
-  MeshTriangle(const std::vector<Vec3<float>>, const std::vector<uint32_t>,
-               uint32_t, const std::vector<Vec2<float>>);
+  MeshTriangle(const std::vector<Vec3<float>>,
+               const std::vector<Vec3<uint32_t>>,
+               const std::vector<Vec2<float>>);
 
   auto intersect(const Vec3<float> &, const Vec3<float> &, float &, uint32_t &,
                  Vec2<float> &) const -> bool;

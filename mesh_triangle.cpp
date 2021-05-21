@@ -38,20 +38,19 @@ auto rayTriangleIntersect(const Vec3<float> &v0, const Vec3<float> &v1,
 }
 
 MeshTriangle::MeshTriangle(const std::vector<Vec3<float>> vertices,
-                           const std::vector<uint32_t> vertexIndex,
-                           uint32_t numTriangles,
+                           const std::vector<Vec3<uint32_t>> vertexIndex,
                            const std::vector<Vec2<float>> st)
-    : numTriangles(numTriangles), stCoordinates(st), vertexIndex(vertexIndex),
-      vertices(vertices) {}
+    : stCoordinates(st), vertexIndex(vertexIndex), vertices(vertices) {}
 
 auto MeshTriangle::intersect(const Vec3<float> &origin,
                              const Vec3<float> &direction, float &tnear,
                              uint32_t &index, Vec2<float> &uv) const -> bool {
   auto intersect = false;
-  for (auto k = 0; k < numTriangles; ++k) {
-    const auto &v0 = vertices[vertexIndex[k * 3]];
-    const auto &v1 = vertices[vertexIndex[k * 3 + 1]];
-    const auto &v2 = vertices[vertexIndex[k * 3 + 2]];
+  for (auto i = 0; i < vertexIndex.size(); i++) {
+    const auto v = vertexIndex[i];
+    const auto &v0 = vertices[v.x];
+    const auto &v1 = vertices[v.y];
+    const auto &v2 = vertices[v.z];
     auto intersection = rayTriangleIntersect(v0, v1, v2, origin, direction);
     if (!intersection.has_value()) {
       continue;
@@ -63,7 +62,7 @@ auto MeshTriangle::intersect(const Vec3<float> &origin,
     tnear = intersection->x;
     uv.x = intersection->y;
     uv.y = intersection->z;
-    index = k;
+    index = i;
     intersect |= true;
   }
 
@@ -74,16 +73,17 @@ auto MeshTriangle::surfaceProperties(const Vec3<float> &, const Vec3<float> &,
                                      uint32_t index,
                                      const Vec2<float> &uv) const
     -> SurfaceProperties {
-  const auto v0 = vertices[vertexIndex[index * 3]];
-  const auto v1 = vertices[vertexIndex[index * 3 + 1]];
-  const auto v2 = vertices[vertexIndex[index * 3 + 2]];
+  const auto v = vertexIndex[index];
+  const auto v0 = vertices[v.x];
+  const auto v1 = vertices[v.y];
+  const auto v2 = vertices[v.z];
   const auto e0 = Vec3<float>::normalize(v1 - v0);
   const auto e1 = Vec3<float>::normalize(v2 - v1);
   auto N = Vec3<float>::normalize(Vec3<float>::crossProduct(e0, e1));
 
-  const auto st0 = stCoordinates[vertexIndex[index * 3]];
-  const auto st1 = stCoordinates[vertexIndex[index * 3 + 1]];
-  const auto st2 = stCoordinates[vertexIndex[index * 3 + 2]];
+  const auto st0 = stCoordinates[v.x];
+  const auto st1 = stCoordinates[v.y];
+  const auto st2 = stCoordinates[v.z];
   auto st = st0 * (1 - uv.x - uv.y) + st1 * uv.x + st2 * uv.y;
 
   return {N, st};
