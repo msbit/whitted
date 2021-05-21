@@ -15,11 +15,11 @@ struct SurfaceProperties {
 
 struct Object {
   // material properties
-  MaterialType materialType;
-  float ior;
   float Kd;
   float Ks;
   Vec3f diffuseColor;
+  float ior;
+  MaterialType materialType;
   float specularExponent;
 
   Object();

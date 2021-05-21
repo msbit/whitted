@@ -120,7 +120,6 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
   const Vec3f hitPoint = origin + direction * tNear;
   SurfaceProperties properties =
       hitObject->surfaceProperties(hitPoint, direction, index, uv);
-  const Vec3f tmp = hitPoint;
   switch (hitObject->materialType) {
   case REFLECTION_AND_REFRACTION: {
     const Vec3f reflectionDirection =
