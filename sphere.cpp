@@ -4,7 +4,7 @@
 
 #include "sphere.h"
 
-auto solveQuadratic(float a, float b, float c) -> std::optional<Vec2f> {
+auto solveQuadratic(float a, float b, float c) -> std::optional<Vec2<float>> {
   const auto discr = b * b - 4 * a * c;
   if (discr < 0) {
     return std::nullopt;
@@ -24,18 +24,19 @@ auto solveQuadratic(float a, float b, float c) -> std::optional<Vec2f> {
   if (x0 > x1) {
     std::swap(x0, x1);
   }
-  return Vec2f{x0, x1};
+  return Vec2<float>{x0, x1};
 }
 
-Sphere::Sphere(const Vec3f c, float r) : center(c), radius(r), radius2(r * r) {}
+Sphere::Sphere(const Vec3<float> c, float r)
+    : center(c), radius(r), radius2(r * r) {}
 
-auto Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
-                       float &tnear, uint32_t &, Vec2f &) const -> bool {
+auto Sphere::intersect(const Vec3<float> &origin, const Vec3<float> &direction,
+                       float &tnear, uint32_t &, Vec2<float> &) const -> bool {
   // analytic solution
   const auto L = origin - center;
-  const auto a = Vec3f::dotProduct(direction, direction);
-  const auto b = 2 * Vec3f::dotProduct(direction, L);
-  const auto c = Vec3f::dotProduct(L, L) - radius2;
+  const auto a = Vec3<float>::dotProduct(direction, direction);
+  const auto b = 2 * Vec3<float>::dotProduct(direction, L);
+  const auto c = Vec3<float>::dotProduct(L, L) - radius2;
   auto solution = solveQuadratic(a, b, c);
   if (!solution.has_value()) {
     return false;
@@ -53,7 +54,8 @@ auto Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
   return true;
 }
 
-auto Sphere::surfaceProperties(const Vec3f &P, const Vec3f &, uint32_t,
-                               const Vec2f &) const -> SurfaceProperties {
-  return {Vec3f::normalize(P - center), Vec2f{0, 0}};
+auto Sphere::surfaceProperties(const Vec3<float> &P, const Vec3<float> &,
+                               uint32_t, const Vec2<float> &) const
+    -> SurfaceProperties {
+  return {Vec3<float>::normalize(P - center), Vec2<float>{0, 0}};
 }

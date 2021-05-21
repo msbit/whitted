@@ -2,20 +2,20 @@
 #define __SPHERE__
 
 #include "object.h"
-#include "vec2f.h"
-#include "vec3f.h"
+#include "vec2.h"
+#include "vec3.h"
 
 struct Sphere : public Object {
-  Vec3f center;
+  Vec3<float> center;
   float radius;
   float radius2;
 
-  Sphere(const Vec3f, float);
+  Sphere(const Vec3<float>, float);
 
-  auto intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
-                 Vec2f &) const -> bool;
-  auto surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
-                         const Vec2f &) const -> SurfaceProperties;
+  auto intersect(const Vec3<float> &, const Vec3<float> &, float &, uint32_t &,
+                 Vec2<float> &) const -> bool;
+  auto surfaceProperties(const Vec3<float> &, const Vec3<float> &, uint32_t,
+                         const Vec2<float> &) const -> SurfaceProperties;
 };
 
 #endif

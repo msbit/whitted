@@ -1,3 +1,4 @@
 #include "light.h"
 
-Light::Light(const Vec3f p, const Vec3f i) : intensity(i), position(p) {}
+Light::Light(const Vec3<float> p, const Vec3<float> i)
+    : intensity(i), position(p) {}

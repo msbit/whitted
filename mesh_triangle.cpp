@@ -4,47 +4,49 @@
 
 #include "mesh_triangle.h"
 
-auto rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-                          const Vec3f &origin, const Vec3f &direction)
-    -> std::optional<Vec3f> {
+auto rayTriangleIntersect(const Vec3<float> &v0, const Vec3<float> &v1,
+                          const Vec3<float> &v2, const Vec3<float> &origin,
+                          const Vec3<float> &direction)
+    -> std::optional<Vec3<float>> {
   const auto edge1 = v1 - v0;
   const auto edge2 = v2 - v0;
-  const auto pvec = Vec3f::crossProduct(direction, edge2);
-  const auto det = Vec3f::dotProduct(edge1, pvec);
+  const auto pvec = Vec3<float>::crossProduct(direction, edge2);
+  const auto det = Vec3<float>::dotProduct(edge1, pvec);
   if (det == 0 || det < 0) {
     return std::nullopt;
   }
 
   const auto tvec = origin - v0;
-  auto u = Vec3f::dotProduct(tvec, pvec);
+  auto u = Vec3<float>::dotProduct(tvec, pvec);
   if (u < 0 || u > det) {
     return std::nullopt;
   }
 
-  const auto qvec = Vec3f::crossProduct(tvec, edge1);
-  auto v = Vec3f::dotProduct(direction, qvec);
+  const auto qvec = Vec3<float>::crossProduct(tvec, edge1);
+  auto v = Vec3<float>::dotProduct(direction, qvec);
   if (v < 0 || u + v > det) {
     return std::nullopt;
   }
 
   const auto invDet = 1 / det;
 
-  auto tnear = Vec3f::dotProduct(edge2, qvec) * invDet;
+  auto tnear = Vec3<float>::dotProduct(edge2, qvec) * invDet;
   u *= invDet;
   v *= invDet;
 
-  return Vec3f{tnear, u, v};
+  return Vec3<float>{tnear, u, v};
 }
 
-MeshTriangle::MeshTriangle(const std::vector<Vec3f> vertices,
+MeshTriangle::MeshTriangle(const std::vector<Vec3<float>> vertices,
                            const std::vector<uint32_t> vertexIndex,
-                           uint32_t numTriangles, const std::vector<Vec2f> st)
+                           uint32_t numTriangles,
+                           const std::vector<Vec2<float>> st)
     : numTriangles(numTriangles), stCoordinates(st), vertexIndex(vertexIndex),
       vertices(vertices) {}
 
-auto MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
-                             float &tnear, uint32_t &index, Vec2f &uv) const
-    -> bool {
+auto MeshTriangle::intersect(const Vec3<float> &origin,
+                             const Vec3<float> &direction, float &tnear,
+                             uint32_t &index, Vec2<float> &uv) const -> bool {
   auto intersect = false;
   for (auto k = 0; k < numTriangles; ++k) {
     const auto &v0 = vertices[vertexIndex[k * 3]];
@@ -68,15 +70,16 @@ auto MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
   return intersect;
 }
 
-auto MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
-                                     uint32_t index, const Vec2f &uv) const
+auto MeshTriangle::surfaceProperties(const Vec3<float> &, const Vec3<float> &,
+                                     uint32_t index,
+                                     const Vec2<float> &uv) const
     -> SurfaceProperties {
   const auto v0 = vertices[vertexIndex[index * 3]];
   const auto v1 = vertices[vertexIndex[index * 3 + 1]];
   const auto v2 = vertices[vertexIndex[index * 3 + 2]];
-  const auto e0 = Vec3f::normalize(v1 - v0);
-  const auto e1 = Vec3f::normalize(v2 - v1);
-  auto N = Vec3f::normalize(Vec3f::crossProduct(e0, e1));
+  const auto e0 = Vec3<float>::normalize(v1 - v0);
+  const auto e1 = Vec3<float>::normalize(v2 - v1);
+  auto N = Vec3<float>::normalize(Vec3<float>::crossProduct(e0, e1));
 
   const auto st0 = stCoordinates[vertexIndex[index * 3]];
   const auto st1 = stCoordinates[vertexIndex[index * 3 + 1]];
@@ -86,9 +89,11 @@ auto MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
   return {N, st};
 }
 
-auto MeshTriangle::evalDiffuseColor(const Vec2f &st) const -> Vec3f {
+auto MeshTriangle::evalDiffuseColor(const Vec2<float> &st) const
+    -> Vec3<float> {
   const auto scale = 5.f;
   const auto pattern =
       (std::fmodf(st.x * scale, 1) > 0.5) ^ (std::fmodf(st.y * scale, 1) > 0.5);
-  return Vec3f::mix({0.815, 0.235, 0.031}, {0.937, 0.937, 0.231}, pattern);
+  return Vec3<float>::mix({0.815, 0.235, 0.031}, {0.937, 0.937, 0.231},
+                          pattern);
 }

@@ -11,8 +11,8 @@
 #include "mesh_triangle.h"
 #include "object.h"
 #include "sphere.h"
-#include "vec2f.h"
-#include "vec3f.h"
+#include "vec2.h"
+#include "vec3.h"
 
 const float kInfinity = std::numeric_limits<float>::max();
 
@@ -23,16 +23,17 @@ struct Options {
   uint32_t height;
   float fov;
   uint8_t maxDepth;
-  Vec3f backgroundColor;
+  Vec3<float> backgroundColor;
   float bias;
 };
 
-auto reflect(const Vec3f &I, const Vec3f &N) -> Vec3f {
-  return I - 2 * Vec3f::dotProduct(I, N) * N;
+auto reflect(const Vec3<float> &I, const Vec3<float> &N) -> Vec3<float> {
+  return I - 2 * Vec3<float>::dotProduct(I, N) * N;
 }
 
-auto refract(const Vec3f &I, const Vec3f &N, float ior) -> Vec3f {
-  auto cosI = std::clamp(Vec3f::dotProduct(I, N), -1.f, 1.f);
+auto refract(const Vec3<float> &I, const Vec3<float> &N, float ior)
+    -> Vec3<float> {
+  auto cosI = std::clamp(Vec3<float>::dotProduct(I, N), -1.f, 1.f);
   auto etaI = 1.f;
   auto etaT = ior;
   auto n = N;
@@ -47,8 +48,8 @@ auto refract(const Vec3f &I, const Vec3f &N, float ior) -> Vec3f {
   return k < 0 ? 0 : eta * I + (eta * cosI - std::sqrtf(k)) * n;
 }
 
-auto fresnel(const Vec3f &I, const Vec3f &N, float ior) -> float {
-  auto cosI = std::clamp(Vec3f::dotProduct(I, N), -1.f, 1.f);
+auto fresnel(const Vec3<float> &I, const Vec3<float> &N, float ior) -> float {
+  auto cosI = std::clamp(Vec3<float>::dotProduct(I, N), -1.f, 1.f);
   auto etaI = 1.f;
   auto etaT = ior;
   if (cosI > 0) {
@@ -72,14 +73,14 @@ auto fresnel(const Vec3f &I, const Vec3f &N, float ior) -> float {
   // kt = 1 - kr;
 }
 
-auto trace(const Vec3f &origin, const Vec3f &direction,
+auto trace(const Vec3<float> &origin, const Vec3<float> &direction,
            const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
-           uint32_t &index, Vec2f &uv, Object **hitObject) -> bool {
+           uint32_t &index, Vec2<float> &uv, Object **hitObject) -> bool {
   *hitObject = nullptr;
   for (const auto &object : objects) {
     auto tNearK = kInfinity;
     uint32_t indexK;
-    Vec2f uvK;
+    Vec2<float> uvK;
     if (!object->intersect(origin, direction, tNearK, indexK, uvK)) {
       continue;
     }
@@ -96,16 +97,16 @@ auto trace(const Vec3f &origin, const Vec3f &direction,
   return (*hitObject != nullptr);
 }
 
-auto castRay(const Vec3f &origin, const Vec3f &direction,
+auto castRay(const Vec3<float> &origin, const Vec3<float> &direction,
              const std::vector<std::unique_ptr<Object>> &objects,
              const std::vector<Light> &lights, const Options &options,
-             uint32_t depth) -> Vec3f {
+             uint32_t depth) -> Vec3<float> {
   if (depth > options.maxDepth) {
     return options.backgroundColor;
   }
 
   auto tNear = kInfinity;
-  Vec2f uv;
+  Vec2<float> uv;
   uint32_t index = 0;
   Object *hitObject = nullptr;
   if (!trace(origin, direction, objects, tNear, index, uv, &hitObject)) {
@@ -119,15 +120,15 @@ auto castRay(const Vec3f &origin, const Vec3f &direction,
   switch (hitObject->materialType) {
   case REFLECTION_AND_REFRACTION: {
     const auto reflectionDirection =
-        Vec3f::normalize(reflect(direction, properties.N));
-    const auto refractionDirection =
-        Vec3f::normalize(refract(direction, properties.N, hitObject->ior));
+        Vec3<float>::normalize(reflect(direction, properties.N));
+    const auto refractionDirection = Vec3<float>::normalize(
+        refract(direction, properties.N, hitObject->ior));
     const auto reflectionRayOrigin =
-        (Vec3f::dotProduct(reflectionDirection, properties.N) < 0)
+        (Vec3<float>::dotProduct(reflectionDirection, properties.N) < 0)
             ? hitPoint - properties.N * options.bias
             : hitPoint + properties.N * options.bias;
     const auto refractionRayOrigin =
-        (Vec3f::dotProduct(refractionDirection, properties.N) < 0)
+        (Vec3<float>::dotProduct(refractionDirection, properties.N) < 0)
             ? hitPoint - properties.N * options.bias
             : hitPoint + properties.N * options.bias;
     const auto reflectionColor =
@@ -144,7 +145,7 @@ auto castRay(const Vec3f &origin, const Vec3f &direction,
     auto kr = fresnel(direction, properties.N, hitObject->ior);
     const auto reflectionDirection = reflect(direction, properties.N);
     const auto reflectionRayOrigin =
-        (Vec3f::dotProduct(reflectionDirection, properties.N) < 0)
+        (Vec3<float>::dotProduct(reflectionDirection, properties.N) < 0)
             ? hitPoint + properties.N * options.bias
             : hitPoint - properties.N * options.bias;
     hitColor = castRay(reflectionRayOrigin, reflectionDirection, objects,
@@ -158,10 +159,10 @@ auto castRay(const Vec3f &origin, const Vec3f &direction,
     // We use the Phong illumation model int the default case. The phong model
     // is composed of a diffuse and a specular reflection component.
     // [/comment]
-    Vec3f lightAmt = 0;
-    Vec3f specularColor = 0;
+    Vec3<float> lightAmt = 0;
+    Vec3<float> specularColor = 0;
     const auto shadowPointOrig =
-        (Vec3f::dotProduct(direction, properties.N) < 0)
+        (Vec3<float>::dotProduct(direction, properties.N) < 0)
             ? hitPoint + properties.N * options.bias
             : hitPoint - properties.N * options.bias;
     // [comment]
@@ -172,10 +173,10 @@ auto castRay(const Vec3f &origin, const Vec3f &direction,
     for (const auto &light : lights) {
       auto lightDir = light.position - hitPoint;
       // square of the distance between hitPoint and the light
-      const auto lightDistance2 = Vec3f::dotProduct(lightDir, lightDir);
-      lightDir = Vec3f::normalize(lightDir);
+      const auto lightDistance2 = Vec3<float>::dotProduct(lightDir, lightDir);
+      lightDir = Vec3<float>::normalize(lightDir);
       const auto LdotN =
-          std::max(0.f, Vec3f::dotProduct(lightDir, properties.N));
+          std::max(0.f, Vec3<float>::dotProduct(lightDir, properties.N));
       Object *shadowHitObject = nullptr;
       auto tNearShadow = kInfinity;
       // is the point in shadow, and is the nearest occluding object closer to
@@ -185,11 +186,10 @@ auto castRay(const Vec3f &origin, const Vec3f &direction,
                             tNearShadow * tNearShadow < lightDistance2;
       lightAmt += (1 - inShadow) * light.intensity * LdotN;
       const auto reflectionDirection = reflect(-lightDir, properties.N);
-      specularColor +=
-          powf(
-              std::max(0.f, -Vec3f::dotProduct(reflectionDirection, direction)),
-              hitObject->specularExponent) *
-          light.intensity;
+      specularColor += powf(std::max(0.f, -Vec3<float>::dotProduct(
+                                              reflectionDirection, direction)),
+                            hitObject->specularExponent) *
+                       light.intensity;
     }
     hitColor =
         lightAmt * hitObject->evalDiffuseColor(properties.st) * hitObject->Kd +
@@ -204,18 +204,18 @@ auto castRay(const Vec3f &origin, const Vec3f &direction,
 auto render(const Options &options,
             const std::vector<std::unique_ptr<Object>> &objects,
             const std::vector<Light> &lights) {
-  auto buffer = new Vec3f[options.width * options.height];
+  auto buffer = new Vec3<float>[options.width * options.height];
   auto pixel = buffer;
   const auto scale = std::tan(deg2rad(options.fov * 0.5));
   const auto imageAspectRatio = options.width / (float)options.height;
-  const Vec3f origin(0);
+  const Vec3<float> origin(0);
   for (auto j = 0; j < options.height; ++j) {
     for (auto i = 0; i < options.width; ++i) {
       // generate primary ray direction
       const float x =
           (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
       const float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-      const auto direction = Vec3f::normalize({x, y, -1});
+      const auto direction = Vec3<float>::normalize({x, y, -1});
       *(pixel++) = castRay(origin, direction, objects, lights, options, 0);
     }
   }
@@ -250,17 +250,17 @@ auto main(int argc, char **argv) -> int {
   objects.emplace_back(sphere1);
   objects.emplace_back(sphere2);
 
-  const std::vector<Vec3f> verts = {
+  const std::vector<Vec3<float>> verts = {
       {-5, -3, -6}, {5, -3, -6}, {5, -3, -16}, {-5, -3, -16}};
   const std::vector<uint32_t> vertIndex = {0, 1, 3, 1, 2, 3};
-  const std::vector<Vec2f> st = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+  const std::vector<Vec2<float>> st = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
   auto mesh = new MeshTriangle(verts, vertIndex, 2, st);
   mesh->materialType = DIFFUSE_AND_GLOSSY;
 
   objects.emplace_back(mesh);
 
-  lights.emplace_back(Vec3f{-20, 70, 20}, 0.5);
-  lights.emplace_back(Vec3f{30, 50, -12}, 1);
+  lights.emplace_back(Vec3<float>{-20, 70, 20}, 0.5);
+  lights.emplace_back(Vec3<float>{30, 50, -12}, 1);
 
   // setting up options
   const Options options = {1600,   1600, 90, 5, {0.235294, 0.67451, 0.843137},
