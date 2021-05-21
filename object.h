@@ -2,6 +2,7 @@
 #define __OBJECT__
 
 #include <cstdint>
+#include <optional>
 
 #include "vec2.h"
 #include "vec3.h"
@@ -25,8 +26,8 @@ struct Object {
   Object();
   virtual ~Object();
 
-  virtual auto intersect(const Vec3<float> &, const Vec3<float> &, float &,
-                         uint32_t &, Vec2<float> &) const -> bool = 0;
+  virtual auto intersect(const Vec3<float> &, const Vec3<float> &) const
+      -> std::optional<std::tuple<float, uint32_t, Vec2<float>>> = 0;
   virtual auto surfaceProperties(const Vec3<float> &, const Vec3<float> &,
                                  uint32_t, const Vec2<float> &) const
       -> SurfaceProperties = 0;

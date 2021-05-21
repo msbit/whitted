@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstring>
 #include <optional>
+#include <tuple>
 
 #include "mesh_triangle.h"
 
@@ -43,8 +44,8 @@ MeshTriangle::MeshTriangle(const std::vector<Vec3<float>> vertices,
     : stCoordinates(st), vertexIndex(vertexIndex), vertices(vertices) {}
 
 auto MeshTriangle::intersect(const Vec3<float> &origin,
-                             const Vec3<float> &direction, float &tnear,
-                             uint32_t &index, Vec2<float> &uv) const -> bool {
+                             const Vec3<float> &direction) const
+    -> std::optional<std::tuple<float, uint32_t, Vec2<float>>> {
   auto hits = std::vector<std::optional<Vec3<float>>>();
   std::transform(vertexIndex.begin(), vertexIndex.end(),
                  std::back_inserter(hits), [this, direction, origin](auto &v) {
@@ -56,7 +57,7 @@ auto MeshTriangle::intersect(const Vec3<float> &origin,
 
   if (!std::any_of(hits.begin(), hits.end(),
                    [](auto i) { return i.has_value(); })) {
-    return false;
+    return std::nullopt;
   }
 
   auto it = std::min_element(hits.begin(), hits.end(),
@@ -71,12 +72,8 @@ auto MeshTriangle::intersect(const Vec3<float> &origin,
                              });
 
   auto found = *it;
-  tnear = found->x;
-  uv.x = found->y;
-  uv.y = found->z;
-  index = it - hits.begin();
-
-  return true;
+  return std::make_tuple(found->x, it - hits.begin(),
+                         Vec2<float>(found->y, found->z));
 }
 
 auto MeshTriangle::surfaceProperties(const Vec3<float> &, const Vec3<float> &,

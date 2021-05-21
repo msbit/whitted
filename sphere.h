@@ -12,8 +12,8 @@ struct Sphere : public Object {
 
   Sphere(const Vec3<float>, float);
 
-  auto intersect(const Vec3<float> &, const Vec3<float> &, float &, uint32_t &,
-                 Vec2<float> &) const -> bool;
+  auto intersect(const Vec3<float> &, const Vec3<float> &) const
+      -> std::optional<std::tuple<float, uint32_t, Vec2<float>>>;
   auto surfaceProperties(const Vec3<float> &, const Vec3<float> &, uint32_t,
                          const Vec2<float> &) const -> SurfaceProperties;
 };

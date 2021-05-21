@@ -78,12 +78,13 @@ auto trace(const Vec3<float> &origin, const Vec3<float> &direction,
            uint32_t &index, Vec2<float> &uv, Object **hitObject) -> bool {
   *hitObject = nullptr;
   for (const auto &object : objects) {
-    auto tNearK = kInfinity;
-    uint32_t indexK;
-    Vec2<float> uvK;
-    if (!object->intersect(origin, direction, tNearK, indexK, uvK)) {
+    auto intersection = object->intersect(origin, direction);
+    if (!intersection.has_value()) {
       continue;
     }
+
+    auto [tNearK, indexK, uvK] = *intersection;
+
     if (tNearK >= tNear) {
       continue;
     }

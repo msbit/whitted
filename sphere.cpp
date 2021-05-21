@@ -30,8 +30,9 @@ auto solveQuadratic(float a, float b, float c) -> std::optional<Vec2<float>> {
 Sphere::Sphere(const Vec3<float> c, float r)
     : center(c), radius(r), radius2(r * r) {}
 
-auto Sphere::intersect(const Vec3<float> &origin, const Vec3<float> &direction,
-                       float &tnear, uint32_t &, Vec2<float> &) const -> bool {
+auto Sphere::intersect(const Vec3<float> &origin,
+                       const Vec3<float> &direction) const
+    -> std::optional<std::tuple<float, uint32_t, Vec2<float>>> {
   // analytic solution
   const auto L = origin - center;
   const auto a = Vec3<float>::dotProduct(direction, direction);
@@ -39,19 +40,17 @@ auto Sphere::intersect(const Vec3<float> &origin, const Vec3<float> &direction,
   const auto c = Vec3<float>::dotProduct(L, L) - radius2;
   auto solution = solveQuadratic(a, b, c);
   if (!solution.has_value()) {
-    return false;
+    return std::nullopt;
   }
 
   if (solution->x < 0) {
     solution->x = solution->y;
   }
   if (solution->x < 0) {
-    return false;
+    return std::nullopt;
   }
 
-  tnear = solution->x;
-
-  return true;
+  return std::make_tuple(solution->x, 0, Vec2<float>(0));
 }
 
 auto Sphere::surfaceProperties(const Vec3<float> &P, const Vec3<float> &,

@@ -1,6 +1,7 @@
 #ifndef __MESH_TRIANGLE__
 #define __MESH_TRIANGLE__
 
+#include <optional>
 #include <vector>
 
 #include "object.h"
@@ -16,8 +17,8 @@ struct MeshTriangle : public Object {
                const std::vector<Vec3<uint32_t>>,
                const std::vector<Vec2<float>>);
 
-  auto intersect(const Vec3<float> &, const Vec3<float> &, float &, uint32_t &,
-                 Vec2<float> &) const -> bool;
+  auto intersect(const Vec3<float> &, const Vec3<float> &) const
+      -> std::optional<std::tuple<float, uint32_t, Vec2<float>>>;
   auto surfaceProperties(const Vec3<float> &, const Vec3<float> &, uint32_t,
                          const Vec2<float> &) const -> SurfaceProperties;
   auto evalDiffuseColor(const Vec2<float> &) const -> Vec3<float>;
