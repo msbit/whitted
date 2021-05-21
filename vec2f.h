@@ -9,8 +9,8 @@ struct Vec2f {
   Vec2f(float);
   Vec2f(float, float);
 
-  Vec2f operator*(float) const;
-  Vec2f operator+(const Vec2f &) const;
+  auto operator*(float) const -> Vec2f;
+  auto operator+(const Vec2f &) const -> Vec2f;
 };
 
 #endif

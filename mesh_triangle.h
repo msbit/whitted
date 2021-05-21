@@ -16,11 +16,11 @@ struct MeshTriangle : public Object {
   MeshTriangle(const std::vector<Vec3f>, const std::vector<uint32_t>, uint32_t,
                const std::vector<Vec2f>);
 
-  bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
-                 Vec2f &) const;
-  SurfaceProperties surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
-                                      const Vec2f &) const;
-  Vec3f evalDiffuseColor(const Vec2f &) const;
+  auto intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
+                 Vec2f &) const -> bool;
+  auto surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
+                         const Vec2f &) const -> SurfaceProperties;
+  auto evalDiffuseColor(const Vec2f &) const -> Vec3f;
 };
 
 #endif

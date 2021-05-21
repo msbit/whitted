@@ -4,7 +4,7 @@
 
 #include "sphere.h"
 
-std::optional<Vec2f> solveQuadratic(float a, float b, float c) {
+auto solveQuadratic(float a, float b, float c) -> std::optional<Vec2f> {
   const auto discr = b * b - 4 * a * c;
   if (discr < 0) {
     return std::nullopt;
@@ -29,8 +29,8 @@ std::optional<Vec2f> solveQuadratic(float a, float b, float c) {
 
 Sphere::Sphere(const Vec3f c, float r) : center(c), radius(r), radius2(r * r) {}
 
-bool Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
-                       float &tnear, uint32_t &, Vec2f &) const {
+auto Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
+                       float &tnear, uint32_t &, Vec2f &) const -> bool {
   // analytic solution
   const auto L = origin - center;
   const auto a = Vec3f::dotProduct(direction, direction);
@@ -53,7 +53,7 @@ bool Sphere::intersect(const Vec3f &origin, const Vec3f &direction,
   return true;
 }
 
-SurfaceProperties Sphere::surfaceProperties(const Vec3f &P, const Vec3f &,
-                                            uint32_t, const Vec2f &) const {
+auto Sphere::surfaceProperties(const Vec3f &P, const Vec3f &, uint32_t,
+                               const Vec2f &) const -> SurfaceProperties {
   return {Vec3f::normalize(P - center), Vec2f{0, 0}};
 }

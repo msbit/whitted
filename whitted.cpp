@@ -16,11 +16,11 @@
 
 const float kInfinity = std::numeric_limits<float>::max();
 
-float clamp(float low, float high, float value) {
+auto clamp(float low, float high, float value) -> float {
   return std::max(low, std::min(high, value));
 }
 
-float deg2rad(float deg) { return deg * M_PI / 180; }
+auto deg2rad(float deg) -> float { return deg * M_PI / 180; }
 
 struct Options {
   uint32_t width;
@@ -31,11 +31,11 @@ struct Options {
   float bias;
 };
 
-Vec3f reflect(const Vec3f &I, const Vec3f &N) {
+auto reflect(const Vec3f &I, const Vec3f &N) -> Vec3f {
   return I - 2 * Vec3f::dotProduct(I, N) * N;
 }
 
-Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
+auto refract(const Vec3f &I, const Vec3f &N, float ior) -> Vec3f {
   auto cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   auto etaI = 1.f;
   auto etaT = ior;
@@ -51,7 +51,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, float ior) {
   return k < 0 ? 0 : eta * I + (eta * cosI - std::sqrtf(k)) * n;
 }
 
-float fresnel(const Vec3f &I, const Vec3f &N, float ior) {
+auto fresnel(const Vec3f &I, const Vec3f &N, float ior) -> float {
   auto cosI = clamp(-1, 1, Vec3f::dotProduct(I, N));
   auto etaI = 1.f;
   auto etaT = ior;
@@ -76,9 +76,9 @@ float fresnel(const Vec3f &I, const Vec3f &N, float ior) {
   // kt = 1 - kr;
 }
 
-bool trace(const Vec3f &origin, const Vec3f &direction,
+auto trace(const Vec3f &origin, const Vec3f &direction,
            const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
-           uint32_t &index, Vec2f &uv, Object **hitObject) {
+           uint32_t &index, Vec2f &uv, Object **hitObject) -> bool {
   *hitObject = nullptr;
   for (const auto &object : objects) {
     auto tNearK = kInfinity;
@@ -100,10 +100,10 @@ bool trace(const Vec3f &origin, const Vec3f &direction,
   return (*hitObject != nullptr);
 }
 
-Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
-              const std::vector<std::unique_ptr<Object>> &objects,
-              const std::vector<Light> &lights, const Options &options,
-              uint32_t depth) {
+auto castRay(const Vec3f &origin, const Vec3f &direction,
+             const std::vector<std::unique_ptr<Object>> &objects,
+             const std::vector<Light> &lights, const Options &options,
+             uint32_t depth) -> Vec3f {
   if (depth > options.maxDepth) {
     return options.backgroundColor;
   }
@@ -205,7 +205,7 @@ Vec3f castRay(const Vec3f &origin, const Vec3f &direction,
   return hitColor;
 }
 
-void render(const Options &options,
+auto render(const Options &options,
             const std::vector<std::unique_ptr<Object>> &objects,
             const std::vector<Light> &lights) {
   auto buffer = new Vec3f[options.width * options.height];
@@ -239,7 +239,7 @@ void render(const Options &options,
   delete[] buffer;
 }
 
-int main(int argc, char **argv) {
+auto main(int argc, char **argv) -> int {
   // creating the scene (adding objects and lights)
   std::vector<std::unique_ptr<Object>> objects;
   std::vector<Light> lights;

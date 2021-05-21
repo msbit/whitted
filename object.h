@@ -25,12 +25,11 @@ struct Object {
   Object();
   virtual ~Object();
 
-  virtual bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
-                         Vec2f &) const = 0;
-  virtual SurfaceProperties surfaceProperties(const Vec3f &, const Vec3f &,
-                                              uint32_t,
-                                              const Vec2f &) const = 0;
-  virtual Vec3f evalDiffuseColor(const Vec2f &) const;
+  virtual auto intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
+                         Vec2f &) const -> bool = 0;
+  virtual auto surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
+                                 const Vec2f &) const -> SurfaceProperties = 0;
+  virtual auto evalDiffuseColor(const Vec2f &) const -> Vec3f;
 };
 
 #endif

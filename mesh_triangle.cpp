@@ -4,9 +4,9 @@
 
 #include "mesh_triangle.h"
 
-std::optional<Vec3f> rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1,
-                                          const Vec3f &v2, const Vec3f &origin,
-                                          const Vec3f &direction) {
+auto rayTriangleIntersect(const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
+                          const Vec3f &origin, const Vec3f &direction)
+    -> std::optional<Vec3f> {
   const auto edge1 = v1 - v0;
   const auto edge2 = v2 - v0;
   const auto pvec = Vec3f::crossProduct(direction, edge2);
@@ -42,8 +42,9 @@ MeshTriangle::MeshTriangle(const std::vector<Vec3f> vertices,
     : numTriangles(numTriangles), stCoordinates(st), vertexIndex(vertexIndex),
       vertices(vertices) {}
 
-bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
-                             float &tnear, uint32_t &index, Vec2f &uv) const {
+auto MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
+                             float &tnear, uint32_t &index, Vec2f &uv) const
+    -> bool {
   auto intersect = false;
   for (auto k = 0; k < numTriangles; ++k) {
     const auto &v0 = vertices[vertexIndex[k * 3]];
@@ -67,9 +68,9 @@ bool MeshTriangle::intersect(const Vec3f &origin, const Vec3f &direction,
   return intersect;
 }
 
-SurfaceProperties MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
-                                                  uint32_t index,
-                                                  const Vec2f &uv) const {
+auto MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
+                                     uint32_t index, const Vec2f &uv) const
+    -> SurfaceProperties {
   const auto v0 = vertices[vertexIndex[index * 3]];
   const auto v1 = vertices[vertexIndex[index * 3 + 1]];
   const auto v2 = vertices[vertexIndex[index * 3 + 2]];
@@ -85,7 +86,7 @@ SurfaceProperties MeshTriangle::surfaceProperties(const Vec3f &, const Vec3f &,
   return {N, st};
 }
 
-Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &st) const {
+auto MeshTriangle::evalDiffuseColor(const Vec2f &st) const -> Vec3f {
   const auto scale = 5.f;
   const auto pattern =
       (std::fmodf(st.x * scale, 1) > 0.5) ^ (std::fmodf(st.y * scale, 1) > 0.5);

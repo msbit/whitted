@@ -12,10 +12,10 @@ struct Sphere : public Object {
 
   Sphere(const Vec3f, float);
 
-  bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
-                 Vec2f &) const;
-  SurfaceProperties surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
-                                      const Vec2f &) const;
+  auto intersect(const Vec3f &, const Vec3f &, float &, uint32_t &,
+                 Vec2f &) const -> bool;
+  auto surfaceProperties(const Vec3f &, const Vec3f &, uint32_t,
+                         const Vec2f &) const -> SurfaceProperties;
 };
 
 #endif
