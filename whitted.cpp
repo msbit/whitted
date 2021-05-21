@@ -4,6 +4,7 @@
 #include <fstream>
 #include <limits>
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -13,8 +14,6 @@
 #include "sphere.h"
 #include "vec2.h"
 #include "vec3.h"
-
-const float kInfinity = std::numeric_limits<float>::max();
 
 auto deg2rad(float deg) -> float { return deg * M_PI / 180; }
 
@@ -74,28 +73,42 @@ auto fresnel(const Vec3<float> &I, const Vec3<float> &N, float ior) -> float {
 }
 
 auto trace(const Vec3<float> &origin, const Vec3<float> &direction,
-           const std::vector<std::unique_ptr<Object>> &objects, float &tNear,
-           uint32_t &index, Vec2<float> &uv, Object **hitObject) -> bool {
-  *hitObject = nullptr;
-  for (const auto &object : objects) {
-    auto intersection = object->intersect(origin, direction);
-    if (!intersection.has_value()) {
-      continue;
-    }
+           const std::vector<std::unique_ptr<Object>> &objects)
+    -> std::optional<std::tuple<float, uint32_t, Vec2<float>, Object *>> {
+  auto hits = std::vector<
+      std::optional<std::tuple<float, uint32_t, Vec2<float>, Object *>>>();
+  std::transform(
+      objects.begin(), objects.end(), std::back_inserter(hits),
+      [direction, origin](auto &o)
+          -> std::optional<std::tuple<float, uint32_t, Vec2<float>, Object *>> {
+        auto hit = o->intersect(origin, direction);
+        if (!hit.has_value()) {
+          return std::nullopt;
+        }
 
-    auto [tNearK, indexK, uvK] = *intersection;
+        auto [x, y, z] = *hit;
 
-    if (tNearK >= tNear) {
-      continue;
-    }
-
-    *hitObject = object.get();
-    tNear = tNearK;
-    index = indexK;
-    uv = uvK;
+        return std::make_tuple(x, y, z, o.get());
+      });
+  if (std::none_of(hits.begin(), hits.end(),
+                   [](auto x) { return x.has_value(); })) {
+    return std::nullopt;
   }
 
-  return (*hitObject != nullptr);
+  auto it = std::min_element(hits.begin(), hits.end(),
+                             [](const auto &a, const auto &b) {
+                               if (!b.has_value()) {
+                                 return a.has_value();
+                               }
+
+                               if (!a.has_value()) {
+                                 return false;
+                               }
+
+                               return std::get<0>(*a) < std::get<0>(*b);
+                             });
+
+  return *it;
 }
 
 auto castRay(const Vec3<float> &origin, const Vec3<float> &direction,
@@ -106,13 +119,12 @@ auto castRay(const Vec3<float> &origin, const Vec3<float> &direction,
     return options.backgroundColor;
   }
 
-  auto tNear = kInfinity;
-  Vec2<float> uv;
-  uint32_t index = 0;
-  Object *hitObject = nullptr;
-  if (!trace(origin, direction, objects, tNear, index, uv, &hitObject)) {
+  auto hit = trace(origin, direction, objects);
+  if (!hit.has_value()) {
     return options.backgroundColor;
   }
+
+  auto [tNear, index, uv, hitObject] = *hit;
 
   auto hitColor = options.backgroundColor;
   const auto hitPoint = origin + direction * tNear;
@@ -178,13 +190,11 @@ auto castRay(const Vec3<float> &origin, const Vec3<float> &direction,
       lightDir = Vec3<float>::normalize(lightDir);
       const auto LdotN =
           std::max(0.f, Vec3<float>::dotProduct(lightDir, properties.N));
-      Object *shadowHitObject = nullptr;
-      auto tNearShadow = kInfinity;
       // is the point in shadow, and is the nearest occluding object closer to
       // the object than the light itself?
-      const auto inShadow = trace(shadowPointOrig, lightDir, objects,
-                                  tNearShadow, index, uv, &shadowHitObject) &&
-                            tNearShadow * tNearShadow < lightDistance2;
+      const auto inShadow =
+          trace(shadowPointOrig, lightDir, objects).has_value() &&
+          std::get<0>(*hit) * std::get<0>(*hit) < lightDistance2;
       lightAmt += (1 - inShadow) * light.intensity * LdotN;
       const auto reflectionDirection = reflect(-lightDir, properties.N);
       specularColor += powf(std::max(0.f, -Vec3<float>::dotProduct(
